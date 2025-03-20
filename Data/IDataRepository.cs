@@ -5,5 +5,7 @@ namespace ThumbsUpGroceries_backend.Data
     public interface IDataRepository
     {
         Task<SignupResponse> Signup(SignupRequest request);
-    }
+
+        Task<DatabaseModel.AppUser> GetUserInfoByEmail(string email);
+}
 }

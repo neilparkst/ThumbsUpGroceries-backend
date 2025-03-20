@@ -8,6 +8,7 @@ namespace ThumbsUpGroceries_backend.Data
     public class DataRepository : IDataRepository
     {
         private readonly string _connectionString;
+        private readonly string _configuration;
 
         public DataRepository(IConfiguration configuration)
         {
@@ -62,5 +63,28 @@ namespace ThumbsUpGroceries_backend.Data
                 }
             }
         }
+
+        public async Task<DatabaseModel.AppUser> GetUserInfoByEmail(string email)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var user = await connection.QueryFirstOrDefaultAsync<DatabaseModel.AppUser>(
+                        "SELECT * FROM AppUser WHERE Email = @Email",
+                        new { Email = email }
+                    );
+
+                    return user;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while signing in");
+                }
+            }
+        }
     }
+
 }
