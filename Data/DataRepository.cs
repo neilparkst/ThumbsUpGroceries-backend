@@ -33,9 +33,9 @@ namespace ThumbsUpGroceries_backend.Data
                     }
 
                     var result = await connection.QueryFirstOrDefaultAsync<SignupResponse>(
-                        "INSERT INTO AppUser (Email, PasswordHash, UserName, PhoneNumber, FirstName, LastName, Address) " +
+                        "INSERT INTO AppUser (Email, PasswordHash, UserName, PhoneNumber, FirstName, LastName, Address, Role) " +
                         "OUTPUT INSERTED.UserId, INSERTED.Email " +
-                        "VALUES (@Email, @PasswordHash, @UserName, @PhoneNumber, @FirstName, @LastName, @Address)",
+                        "VALUES (@Email, @PasswordHash, @UserName, @PhoneNumber, @FirstName, @LastName, @Address, @Role)",
                         new
                         {
                             Email = request.Email,
@@ -44,7 +44,8 @@ namespace ThumbsUpGroceries_backend.Data
                             PhoneNumber = request.PhoneNumber,
                             FirstName = request.FirstName,
                             LastName = request.LastName,
-                            Address = request.Address
+                            Address = request.Address,
+                            Role = "Customer"
                         }
                     );
 
