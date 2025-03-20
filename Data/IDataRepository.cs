@@ -1,7 +1,9 @@
-﻿namespace ThumbsUpGroceries_backend.Data
+﻿using ThumbsUpGroceries_backend.Data.Models;
+
+namespace ThumbsUpGroceries_backend.Data
 {
     public interface IDataRepository
     {
-
+        Task<SignupResponse> Signup(SignupRequest request);
     }
 }

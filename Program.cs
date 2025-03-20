@@ -1,4 +1,6 @@
 
+using ThumbsUpGroceries_backend.Data;
+
 namespace ThumbsUpGroceries_backend
 {
     public class Program
@@ -13,6 +15,9 @@ namespace ThumbsUpGroceries_backend
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            // Add custom dependency injection
+            builder.Services.AddScoped<IDataRepository, DataRepository>();
 
             var app = builder.Build();
 
