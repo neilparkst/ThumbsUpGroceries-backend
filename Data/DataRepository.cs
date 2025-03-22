@@ -85,6 +85,27 @@ namespace ThumbsUpGroceries_backend.Data
                 }
             }
         }
+
+        public async Task<List<Category>> GetCategories()
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var categories = await connection.QueryAsync<Category>(
+                        "SELECT * FROM Category"
+                    );
+
+                    return categories.ToList();
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching categories");
+                }
+            }
+        }
     }
 
 }
