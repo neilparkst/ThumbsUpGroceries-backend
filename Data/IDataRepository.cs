@@ -9,5 +9,7 @@ namespace ThumbsUpGroceries_backend.Data
         Task<DatabaseModel.AppUser> GetUserInfoByEmail(string email);
 
         Task<List<Category>> GetCategories();
+
+        Task<int> AddProduct(ProductAddRequest reqeust);
     }
 }

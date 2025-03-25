@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using Azure.Core;
+using Dapper;
 
 using Microsoft.Data.SqlClient;
 using ThumbsUpGroceries_backend.Data.Models;
@@ -103,6 +104,65 @@ namespace ThumbsUpGroceries_backend.Data
                 catch (Exception e)
                 {
                     throw new Exception("An error occurred while fetching categories");
+                }
+            }
+        }
+
+        public async Task<int> AddProduct(ProductAddRequest request)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    var uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
+                    if (!Directory.Exists(uploadFolder))
+                    {
+                        Directory.CreateDirectory(uploadFolder);
+                    }
+
+                    List<string> imagePaths = new();
+
+                    if (request.Images != null && request.Images.Count > 0)
+                    {
+                        foreach (var file in request.Images)
+                        {
+                            if (file.Length > 0)
+                            {
+                                var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                                var filePath = Path.Combine(uploadFolder, fileName);
+
+                                using (var stream = new FileStream(filePath, FileMode.Create))
+                                {
+                                    await file.CopyToAsync(stream);
+                                }
+
+                                imagePaths.Add($"/images/products/{fileName}");
+                            }
+                        }
+                    }
+                    
+                    await connection.OpenAsync();
+
+                    var productId = await connection.QueryFirstOrDefaultAsync<int>(
+                        "INSERT INTO Product (Name, Price, PriceUnitType, Description, Images, Quantity) " +
+                        "OUTPUT INSERTED.ProductId " +
+                        "VALUES (@Name, @Price, @PriceUnitType, @Description, @Images, @Quantity)",
+                        new
+                        {
+                            Name = request.Name,
+                            Price = request.Price,
+                            PriceUnitType = request.PriceUnitType,
+                            Description = request.Description ?? (object)DBNull.Value,
+                            Images = imagePaths.Count > 0 ? string.Join(",", imagePaths) : (object)DBNull.Value,
+                            Quantity = request.Quantity
+                        }
+                    );
+
+                    return productId;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while adding product");
                 }
             }
         }

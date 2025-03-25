@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using ThumbsUpGroceries_backend.Data;
+using ThumbsUpGroceries_backend.Data.Models;
 
 namespace ThumbsUpGroceries_backend.Controllers
 {
@@ -15,6 +17,21 @@ namespace ThumbsUpGroceries_backend.Controllers
         {
             _dataRepository = dataRepository;
             _cache = cache;
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("")]
+        public async Task<ActionResult> AddProduct([FromForm] ProductAddRequest reqeust)
+        {
+            try
+            {
+                var productId = await _dataRepository.AddProduct(reqeust);
+                return Ok(productId);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
         }
 
         private const string CacheKeyCategoryTree = "CategoryTree";
