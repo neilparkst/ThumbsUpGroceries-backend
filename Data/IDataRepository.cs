@@ -10,6 +10,8 @@ namespace ThumbsUpGroceries_backend.Data
 
         Task<List<Category>> GetCategories();
 
+        Task<Product?> GetProduct(int productId);
+
         Task<int> AddProduct(ProductAddRequest reqeust);
     }
 }

@@ -19,6 +19,38 @@ namespace ThumbsUpGroceries_backend.Controllers
             _cache = cache;
         }
 
+        [HttpGet(":productId")]
+        public async Task<ActionResult> GetProduct(int productId)
+        {
+            try
+            {
+                var product = await _dataRepository.GetProduct(productId);
+                if (product == null)
+                {
+                    return NotFound();
+                }
+
+                ProductResponse productResponse = new ProductResponse
+                {
+                    ProductId = product.ProductId,
+                    Name = product.Name,
+                    Price = product.Price,
+                    PriceUnitType = product.PriceUnitType,
+                    Description = product.Description,
+                    Images = product.Images?.Split(",").ToList(),
+                    Quantity = product.Quantity,
+                    Rating = product.Rating,
+                    ReviewCount = product.ReviewCount
+                };
+
+                return Ok(productResponse);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpPost("")]
         public async Task<ActionResult> AddProduct([FromForm] ProductAddRequest reqeust)

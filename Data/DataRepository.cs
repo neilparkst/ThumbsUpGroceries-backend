@@ -108,6 +108,28 @@ namespace ThumbsUpGroceries_backend.Data
             }
         }
 
+        public async Task<Product?> GetProduct(int productId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var product = await connection.QueryFirstOrDefaultAsync<Product>(
+                        "SELECT * FROM Product WHERE ProductId = @ProductId",
+                        new { ProductId = productId }
+                    );
+
+                    return product;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching product");
+                }
+            }
+        }
+
         public async Task<int> AddProduct(ProductAddRequest request)
         {
             using (var connection = new SqlConnection(_connectionString))
