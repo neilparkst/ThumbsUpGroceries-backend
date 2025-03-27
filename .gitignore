@@ -365,3 +365,6 @@ FodyWeavers.xsd
 # settings file
 appsettings.json
 Properties/launchSettings.json
+
+# wwwroot files
+wwwroot/
