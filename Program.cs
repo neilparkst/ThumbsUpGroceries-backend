@@ -32,8 +32,9 @@ namespace ThumbsUpGroceries_backend
                     ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
                     ValidAudience = builder.Configuration["JwtSettings:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"])),
-                    RoleClaimType = "Role"
+                    RoleClaimType = "role"
                 };
+                options.MapInboundClaims = false;
             });
 
             // Add custom dependency injection
@@ -51,6 +52,7 @@ namespace ThumbsUpGroceries_backend
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
