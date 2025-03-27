@@ -180,6 +180,17 @@ namespace ThumbsUpGroceries_backend.Data
                         }
                     );
 
+                    if (request.Categories != null && request.Categories.Count > 0)
+                    {
+                        foreach (var categoryId in request.Categories)
+                        {
+                            await connection.ExecuteAsync(
+                                "INSERT INTO ProductCategoryXRef (ProductId, CategoryId) VALUES (@ProductId, @CategoryId)",
+                                new { ProductId = productId, CategoryId = categoryId }
+                            );
+                        }
+                    }
+
                     return productId;
                 }
                 catch (Exception e)

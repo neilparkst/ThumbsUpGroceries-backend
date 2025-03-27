@@ -11,6 +11,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public string? Description { get; set; }
         public string? Images { get; set; }
         public float Quantity { get; set; }
+        public List<int> Categories { get; set; }
         public float? Rating { get; set; }
         public int? ReviewCount { get; set; }
     }
@@ -24,6 +25,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public string? Description { get; set; }
         public List<string>? Images { get; set; }
         public float Quantity { get; set; }
+        public List<int> Categories { get; set; } = [];
         public float? Rating { get; set; }
         public int? ReviewCount { get; set; }
     }
@@ -40,5 +42,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public List<IFormFile>? Images { get; set; }
         [Required]
         public float Quantity { get; set; }
+        [Required]
+        public List<int> Categories { get; set; }
     }
 }
