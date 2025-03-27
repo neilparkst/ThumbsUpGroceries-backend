@@ -19,7 +19,7 @@ namespace ThumbsUpGroceries_backend.Controllers
             _cache = cache;
         }
 
-        [HttpGet(":productId")]
+        [HttpGet("{productId}")]
         public async Task<ActionResult> GetProduct(int productId)
         {
             try
