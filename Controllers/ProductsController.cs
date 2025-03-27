@@ -69,6 +69,26 @@ namespace ThumbsUpGroceries_backend.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{productId}")]
+        [HttpPatch("{productId}")]
+        public async Task<ActionResult> UpdateProduct(int productId, [FromForm] ProductUpdateRequest request)
+        {
+            try
+            {
+                var _productId = await _dataRepository.UpdateProduct(productId, request);
+                if (_productId == -1)
+                {
+                    return NotFound();
+                }
+                return Ok(new { productId = _productId });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
         private const string CacheKeyCategoryTree = "CategoryTree";
         private class CategoryDto
         {

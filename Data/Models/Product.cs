@@ -45,4 +45,16 @@ namespace ThumbsUpGroceries_backend.Data.Models
         [Required]
         public List<int> Categories { get; set; }
     }
+
+    public class ProductUpdateRequest
+    {
+        public string? Name { get; set; }
+        public float? Price { get; set; }
+        public string? PriceUnitType { get; set; }
+        public string? Description { get; set; }
+        public List<IFormFile>? Images { get; set; }
+        public float? Quantity { get; set; }
+        public float? AddedQuantity { get; set; }
+        public List<int>? Categories { get; set; }
+    }
 }
