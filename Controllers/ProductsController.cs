@@ -58,7 +58,7 @@ namespace ThumbsUpGroceries_backend.Controllers
             try
             {
                 var productId = await _dataRepository.AddProduct(reqeust);
-                return Ok(productId);
+                return Ok(new { productId });
             }
             catch (Exception e)
             {
