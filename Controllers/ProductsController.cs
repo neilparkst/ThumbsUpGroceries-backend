@@ -30,6 +30,8 @@ namespace ThumbsUpGroceries_backend.Controllers
                     return NotFound();
                 }
 
+                var productCategories = await _dataRepository.GetCategoriesByProduct(productId);
+
                 ProductResponse productResponse = new ProductResponse
                 {
                     ProductId = product.ProductId,
@@ -39,6 +41,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                     Description = product.Description,
                     Images = product.Images?.Split(",").ToList(),
                     Quantity = product.Quantity,
+                    Categories = productCategories,
                     Rating = product.Rating,
                     ReviewCount = product.ReviewCount
                 };
@@ -83,7 +86,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 {
                     return Ok(cachedTree);
                 }
-                var categories = await _dataRepository.GetCategories();
+                var categories = await _dataRepository.GetAllCategories();
                 var idToCategoryDto = categories.ToDictionary(c => c.CategoryId, c => new CategoryDto
                 {
                     CategoryId = c.CategoryId,

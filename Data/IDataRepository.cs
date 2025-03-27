@@ -8,9 +8,11 @@ namespace ThumbsUpGroceries_backend.Data
 
         Task<DatabaseModel.AppUser> GetUserInfoByEmail(string email);
 
-        Task<List<Category>> GetCategories();
+        Task<List<Category>> GetAllCategories();
 
         Task<Product?> GetProduct(int productId);
+
+        Task<List<int>> GetCategoriesByProduct(int productId);
 
         Task<int> AddProduct(ProductAddRequest reqeust);
     }

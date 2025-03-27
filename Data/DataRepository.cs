@@ -87,7 +87,7 @@ namespace ThumbsUpGroceries_backend.Data
             }
         }
 
-        public async Task<List<Category>> GetCategories()
+        public async Task<List<Category>> GetAllCategories()
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -126,6 +126,28 @@ namespace ThumbsUpGroceries_backend.Data
                 catch (Exception e)
                 {
                     throw new Exception("An error occurred while fetching product");
+                }
+            }
+        }
+
+        public async Task<List<int>> GetCategoriesByProduct(int productId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var categories = await connection.QueryAsync<int>(
+                        "SELECT CategoryId FROM ProductCategoryXRef WHERE ProductId = @ProductId",
+                        new { ProductId = productId }
+                    );
+
+                    return categories.ToList();
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching product categories");
                 }
             }
         }
