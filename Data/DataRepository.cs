@@ -158,12 +158,14 @@ namespace ThumbsUpGroceries_backend.Data
             {
                 try
                 {
+                    // create folder for images
                     var uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
                     if (!Directory.Exists(uploadFolder))
                     {
                         Directory.CreateDirectory(uploadFolder);
                     }
 
+                    // save images to folder
                     List<string> imagePaths = new();
 
                     if (request.Images != null && request.Images.Count > 0)
@@ -202,6 +204,7 @@ namespace ThumbsUpGroceries_backend.Data
                         }
                     );
 
+                    // add categories
                     if (request.Categories != null && request.Categories.Count > 0)
                     {
                         foreach (var categoryId in request.Categories)
@@ -230,6 +233,7 @@ namespace ThumbsUpGroceries_backend.Data
                 {
                     await connection.OpenAsync();
 
+                    // check if product exists
                     var isProductExists = await connection.ExecuteScalarAsync<bool>(
                         "SELECT 1 WHERE EXISTS(SELECT 1 FROM Product WHERE ProductId = @ProductId)",
                         new { ProductId = productId }
@@ -239,6 +243,7 @@ namespace ThumbsUpGroceries_backend.Data
                         return -1;
                     }
 
+                    // get existing images
                     var existingImages = await connection.QueryFirstOrDefaultAsync<string>(
                         "SELECT Images FROM Product WHERE ProductId = @ProductId",
                         new { ProductId = productId }
@@ -246,18 +251,21 @@ namespace ThumbsUpGroceries_backend.Data
 
                     List<string> currentImages = existingImages?.Split(',').ToList() ?? new();
 
+                    // create folder for images
                     var uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
                     if (!Directory.Exists(uploadFolder))
                     {
                         Directory.CreateDirectory(uploadFolder);
                     }
 
+                    // save images to folder
                     List<string> newImagePaths = new();
 
                     if (request.Images != null && request.Images.Count > 0)
                     {
                         foreach (var file in request.Images)
                         {
+                            // if image already exists, add it to newImagePaths and do nothing
                             if (currentImages.Contains(file.FileName))
                             {
                                 newImagePaths.Add(file.FileName);
@@ -279,6 +287,7 @@ namespace ThumbsUpGroceries_backend.Data
                         }
                     }
 
+                    // delete images that are not in the request
                     var imagesToDelete = currentImages.Except(newImagePaths).ToList();
                     foreach (var imagePath in imagesToDelete)
                     {
@@ -321,6 +330,7 @@ namespace ThumbsUpGroceries_backend.Data
                         );
                     }
 
+                    // update categories
                     await connection.ExecuteAsync(
                         "DELETE FROM ProductCategoryXRef WHERE ProductId = @ProductId",
                         new { ProductId = productId }
@@ -354,6 +364,7 @@ namespace ThumbsUpGroceries_backend.Data
                 {
                     await connection.OpenAsync();
 
+                    // check if product exists
                     var isProductExists = await connection.ExecuteScalarAsync<bool>(
                         "SELECT 1 WHERE EXISTS(SELECT 1 FROM Product WHERE ProductId = @ProductId)",
                         new { ProductId = productId }
@@ -363,6 +374,7 @@ namespace ThumbsUpGroceries_backend.Data
                         return -1;
                     }
 
+                    // delete images
                     var existingImages = await connection.QueryFirstOrDefaultAsync<string>(
                         "SELECT Images FROM Product WHERE ProductId = @ProductId",
                         new { ProductId = productId }
@@ -385,6 +397,7 @@ namespace ThumbsUpGroceries_backend.Data
                         }
                     }
 
+                    // delete product
                     await connection.ExecuteAsync(
                         "DELETE FROM Product WHERE ProductId = @ProductId",
                         new { ProductId = productId }
