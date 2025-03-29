@@ -246,10 +246,10 @@ namespace ThumbsUpGroceries_backend.Data
 
                     List<string> currentImages = existingImages?.Split(',').ToList() ?? new();
 
-                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
-                    if (!Directory.Exists(uploadsFolder))
+                    var uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
+                    if (!Directory.Exists(uploadFolder))
                     {
-                        Directory.CreateDirectory(uploadsFolder);
+                        Directory.CreateDirectory(uploadFolder);
                     }
 
                     List<string> newImagePaths = new();
@@ -267,7 +267,7 @@ namespace ThumbsUpGroceries_backend.Data
                             if (file.Length > 0)
                             {
                                 var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-                                var filePath = Path.Combine(uploadsFolder, fileName);
+                                var filePath = Path.Combine(uploadFolder, fileName);
 
                                 using (var stream = new FileStream(filePath, FileMode.Create))
                                 {
