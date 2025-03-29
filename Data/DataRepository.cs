@@ -345,5 +345,58 @@ namespace ThumbsUpGroceries_backend.Data
                 }
             }
         }
+
+        public async Task<int> RemoveProduct(int productId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var isProductExists = await connection.ExecuteScalarAsync<bool>(
+                        "SELECT 1 WHERE EXISTS(SELECT 1 FROM Product WHERE ProductId = @ProductId)",
+                        new { ProductId = productId }
+                    );
+                    if (!isProductExists)
+                    {
+                        return -1;
+                    }
+
+                    var existingImages = await connection.QueryFirstOrDefaultAsync<string>(
+                        "SELECT Images FROM Product WHERE ProductId = @ProductId",
+                        new { ProductId = productId }
+                    );
+
+                    List<string> currentImages = existingImages?.Split(',').ToList() ?? new();
+
+                    var uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
+                    if (!Directory.Exists(uploadFolder))
+                    {
+                        Directory.CreateDirectory(uploadFolder);
+                    }
+
+                    foreach (var imagePath in currentImages)
+                    {
+                        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", imagePath.TrimStart('/'));
+                        if (System.IO.File.Exists(fullPath))
+                        {
+                            System.IO.File.Delete(fullPath);
+                        }
+                    }
+
+                    await connection.ExecuteAsync(
+                        "DELETE FROM Product WHERE ProductId = @ProductId",
+                        new { ProductId = productId }
+                    );
+
+                    return productId;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while deleting product");
+                }
+            }
+        }
     }
 }

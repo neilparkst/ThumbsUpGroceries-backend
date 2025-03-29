@@ -89,6 +89,25 @@ namespace ThumbsUpGroceries_backend.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{productId}")]
+        public async Task<ActionResult> RemoveProduct(int productId)
+        {
+            try
+            {
+                var _productId = await _dataRepository.RemoveProduct(productId);
+                if (_productId == -1)
+                {
+                    return NotFound();
+                }
+                return Ok(new { productId = _productId });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
         private const string CacheKeyCategoryTree = "CategoryTree";
         private class CategoryDto
         {

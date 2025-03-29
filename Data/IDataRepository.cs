@@ -17,5 +17,7 @@ namespace ThumbsUpGroceries_backend.Data
         Task<int> AddProduct(ProductAddRequest reqeust);
 
         Task<int> UpdateProduct(int productId, ProductUpdateRequest request);
+
+        Task<int> RemoveProduct(int productId);
     }
 }
