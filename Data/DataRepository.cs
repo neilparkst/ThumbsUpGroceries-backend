@@ -305,7 +305,7 @@ namespace ThumbsUpGroceries_backend.Data
                             "Price = ISNULL(@Price, Price), " +
                             "PriceUnitType = ISNULL(@PriceUnitType, PriceUnitType), " +
                             "Description = ISNULL(@Description, Description), " +
-                            "Images = ISNULL(@Images, Images), " +
+                            "Images = @Images, " +
                             "Quantity = ISNULL(@Quantity, Quantity) " +
                             "WHERE ProductId = @ProductId",
                             new
