@@ -411,5 +411,157 @@ namespace ThumbsUpGroceries_backend.Data
                 }
             }
         }
+
+        public async Task<List<Product>> GetProducts(int page, int pageSize)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var products = await connection.QueryAsync<Product>(
+                        "SELECT * FROM Product ORDER BY ProductId OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY",
+                        new { Offset = (page - 1) * pageSize, PageSize = pageSize }
+                    );
+
+                    return products.ToList();
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching products");
+                }
+            }
+        }
+
+        public async Task<List<Product>> GetProductsByCategory(int categoryId, string sort, int page, int pageSize)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    string sortMethod = sort switch
+                    {
+                        "priceLow" => "Price ASC",
+                        "priceHigh" => "Price DESC",
+                        _ => "ProductId"
+                    };
+
+                    string sql = "SELECT * FROM Product WHERE ProductId IN (SELECT ProductId FROM ProductCategoryXRef WHERE CategoryId = @CategoryId) ";
+                    if (!string.IsNullOrEmpty(sortMethod))
+                    {
+                        sql += $"ORDER BY {sortMethod} ";
+                    }
+                    sql += "OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
+
+                    var products = await connection.QueryAsync<Product>(sql,
+                        new { CategoryId = categoryId, Offset = (page - 1) * pageSize, PageSize = pageSize }
+                    );
+
+                    return products.ToList();
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching products");
+                }
+            }
+        }
+
+        public async Task<List<Product>> GetProductsBySearch(string search, string sort, int page, int pageSize)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    string sql = @"
+                        SELECT DISTINCT
+                            p.*,
+                            CASE 
+                                WHEN p.Name LIKE @Search THEN 1
+                                WHEN c.Name LIKE @Search THEN 2
+                                ELSE 3 -- Shouldn't happen with the WHERE clause, but for completeness
+                            END AS SearchPriority
+                        FROM 
+                            Product p
+                        INNER JOIN 
+                            ProductCategoryXRef pcx ON p.ProductID = pcx.ProductID
+                        INNER JOIN 
+                            Category c ON pcx.CategoryID = c.CategoryID
+                        WHERE 
+                            (
+                                p.Name LIKE @Search
+            
+                                OR
+
+                                c.Name LIKE @Search
+                            )
+                            AND p.Quantity > 0
+                        ORDER BY 
+                            SearchPriority
+                    ";
+
+                    string sortMethod = sort switch
+                    {
+                        "priceLow" => "p.Price ASC",
+                        "priceHigh" => "p.Price DESC",
+                        _ => "p.ProductId"
+                    };
+                    if (!string.IsNullOrEmpty(sortMethod))
+                    {
+                        sql += $", {sortMethod}";
+                    }
+                    sql += " OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
+
+                    var products = await connection.QueryAsync<Product>(sql,
+                        new { Search = $"%{search}%", Offset = (page - 1) * pageSize, PageSize = pageSize }
+                    );
+
+                    return products.ToList();
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching products");
+                }
+            }
+        }
+
+        public async Task<List<Product>> GetProductsBySearchAndCategory(int categoryId, string search, string sort, int page, int pageSize)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    string sortMethod = sort switch
+                    {
+                        "priceLow" => "Price ASC",
+                        "priceHigh" => "Price DESC",
+                        _ => "ProductId"
+                    };
+
+                    string sql = "SELECT * FROM Product WHERE ProductId IN (SELECT ProductId FROM ProductCategoryXRef WHERE CategoryId = @CategoryId) AND Name LIKE @Search ";
+                    if (!string.IsNullOrEmpty(sortMethod))
+                    {
+                        sql += $"ORDER BY {sortMethod} ";
+                    }
+                    sql += " OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
+
+                    var products = await connection.QueryAsync<Product>(sql,
+                        new { Search = $"%{search}%", CategoryID = categoryId, Offset = (page - 1) * pageSize, PageSize = pageSize }
+                    );
+
+                    return products.ToList();
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching products");
+                }
+            }
+        }
     }
 }

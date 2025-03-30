@@ -108,6 +108,52 @@ namespace ThumbsUpGroceries_backend.Controllers
             }
         }
 
+        [HttpGet("")]
+        public async Task<ActionResult> GetProducts(
+            [FromQuery] int? categoryId,
+            [FromQuery] string? sort,
+            [FromQuery] string? search,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10
+        ){
+            try
+            {
+                List<Product> products;
+                if (categoryId != null && !String.IsNullOrEmpty(search))
+                {
+                    products = await _dataRepository.GetProductsBySearchAndCategory(categoryId.Value, search, sort, page, pageSize);
+                }
+                else if(categoryId != null)
+                {
+                    products = await _dataRepository.GetProductsByCategory(categoryId.Value, sort, page, pageSize);
+                }
+                else if (!String.IsNullOrEmpty(search))
+                {
+                    products = await _dataRepository.GetProductsBySearch(search, sort, page, pageSize);
+                }
+                else
+                {
+                    products = await _dataRepository.GetProducts(page, pageSize);
+                }
+
+                var productManyResponse = products.Select(p => new ProductManyResponse
+                {
+                    ProductId = p.ProductId,
+                    Name = p.Name,
+                    Price = p.Price,
+                    PriceUnitType = p.PriceUnitType,
+                    Image = p.Images?.Split(",")[0] ?? "",
+                    Rating = p.Rating ?? 0,
+                    ReviewCount = p.ReviewCount ?? 0
+                }).ToList();
+                return Ok(productManyResponse);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
         private const string CacheKeyCategoryTree = "CategoryTree";
         private class CategoryDto
         {

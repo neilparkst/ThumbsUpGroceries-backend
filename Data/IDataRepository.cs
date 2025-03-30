@@ -19,5 +19,13 @@ namespace ThumbsUpGroceries_backend.Data
         Task<int> UpdateProduct(int productId, ProductUpdateRequest request);
 
         Task<int> RemoveProduct(int productId);
+
+        Task<List<Product>> GetProducts(int page, int pageSize);
+
+        Task<List<Product>> GetProductsByCategory(int categoryId, string sort, int page, int pageSize);
+
+        Task<List<Product>> GetProductsBySearch(string search, string sort, int page, int pageSize);
+
+        Task<List<Product>> GetProductsBySearchAndCategory(int categoryId, string search, string sort, int page, int pageSize);
     }
 }

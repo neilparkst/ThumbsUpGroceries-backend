@@ -30,7 +30,18 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public int? ReviewCount { get; set; }
     }
 
-    public class ProductAddRequest
+    public class ProductManyResponse
+    {
+        public int ProductId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public float Price { get; set; }
+        public string PriceUnitType { get; set; } = string.Empty;
+        public string Image { get; set; } = string.Empty;
+        public float Rating { get; set; }
+        public int ReviewCount { get; set; }
+    }
+
+        public class ProductAddRequest
     {
         [Required]
         public string Name { get; set; }
