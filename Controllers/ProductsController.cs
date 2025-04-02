@@ -230,5 +230,39 @@ namespace ThumbsUpGroceries_backend.Controllers
                 return StatusCode(500, e.ToString());
             }
         }
-    }
+
+        [Authorize]
+        [HttpPut("{productId}/reviews/{reviewId}")]
+        public async Task<ActionResult> UpdateReview(int productId, int reviewId, [FromBody] ReviewAddRequest request)
+        {
+            try
+            {
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                var isAuthorized = await _dataRepository.IsUserAuthorizedForReview(productId, reviewId, userId);
+                if (!isAuthorized)
+                {
+                    return Unauthorized();
+                }
+
+                if (request.Rating < 1 || request.Rating > 5 || request.Rating % 0.5 != 0)
+                {
+                    return BadRequest("Rating not valid");
+                }
+
+
+                var _reviewId = await _dataRepository.UpdateReview(productId, reviewId, request);
+                if (_reviewId == -1)
+                {
+                    return NotFound();
+                }
+
+                return Ok(new { reviewId = _reviewId });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
 }

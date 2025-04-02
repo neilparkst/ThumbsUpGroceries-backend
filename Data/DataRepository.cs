@@ -629,5 +629,84 @@ namespace ThumbsUpGroceries_backend.Data
                 }
             }
         }
+
+        public async Task<bool> IsUserAuthorizedForReview(int productId, int reviewId, Guid userId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var isAuthorized = await connection.ExecuteScalarAsync<bool>(
+                        "SELECT 1 WHERE EXISTS(SELECT 1 FROM Review WHERE ReviewId = @ReviewId AND ProductId = @ProductId AND UserId = @UserId)",
+                        new { ReviewId = reviewId, ProductId = productId, UserId = userId }
+                    );
+
+                    return isAuthorized;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while checking authorization for review");
+                }
+            }
+        }
+
+        public async Task<int> UpdateReview(int productId, int reviewId, ReviewAddRequest request)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    using (var transaction = await connection.BeginTransactionAsync())
+                    {
+                        try
+                        {
+                            // Update Review
+                            await connection.ExecuteAsync(
+                                "UPDATE Review SET " +
+                                "Comment = @Comment, " +
+                                "Rating = @Rating " +
+                                "WHERE ReviewId = @ReviewId",
+                                new
+                                {
+                                    Comment = request.Comment,
+                                    Rating = request.Rating,
+                                    ReviewId = reviewId
+                                },
+                                transaction: transaction
+                            );
+
+                            // Update Product
+                            await connection.ExecuteAsync(
+                                "UPDATE Product SET " +
+                                "Rating = (SELECT AVG(Rating) FROM Review WHERE ProductId = @ProductId), " +
+                                "ReviewCount = (SELECT COUNT(*) FROM Review WHERE ProductId = @ProductId) " +
+                                "WHERE ProductId = @ProductId",
+                                new { ProductId = productId },
+                                transaction: transaction
+                            );
+
+                            // Commit the transaction
+                            await transaction.CommitAsync();
+
+                            return reviewId;
+                        }
+                        catch (Exception)
+                        {
+                            // Rollback the transaction if any error occurs
+                            await transaction.RollbackAsync();
+                            throw;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while updating review");
+                }
+            }
+        }
     }
 }
