@@ -27,5 +27,7 @@ namespace ThumbsUpGroceries_backend.Data
         Task<List<Product>> GetProductsBySearch(string search, string sort, int page, int pageSize);
 
         Task<List<Product>> GetProductsBySearchAndCategory(int categoryId, string search, string sort, int page, int pageSize);
+
+        Task<int> AddReview(int productId, Guid userId, ReviewAddRequest request);
     }
 }

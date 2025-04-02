@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using ThumbsUpGroceries_backend.Data;
 using ThumbsUpGroceries_backend.Data.Models;
+using ThumbsUpGroceries_backend.Service;
 
 namespace ThumbsUpGroceries_backend.Controllers
 {
@@ -115,7 +116,8 @@ namespace ThumbsUpGroceries_backend.Controllers
             [FromQuery] string? search,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
-        ){
+        )
+        {
             try
             {
                 List<Product> products;
@@ -123,7 +125,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 {
                     products = await _dataRepository.GetProductsBySearchAndCategory(categoryId.Value, search, sort, page, pageSize);
                 }
-                else if(categoryId != null)
+                else if (categoryId != null)
                 {
                     products = await _dataRepository.GetProductsByCategory(categoryId.Value, sort, page, pageSize);
                 }
@@ -180,7 +182,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 });
 
                 var categoryTree = new List<CategoryDto>();
-                foreach(var category in categories)
+                foreach (var category in categories)
                 {
                     if (category.ParentCategoryId == null)
                     {
@@ -198,6 +200,34 @@ namespace ThumbsUpGroceries_backend.Controllers
             catch (Exception e)
             {
                 return StatusCode(500);
+            }
+        }
+
+        [Authorize]
+        [HttpPost("{productId}/reviews")]
+        public async Task<ActionResult> AddReview(int productId, [FromBody] ReviewAddRequest request)
+        {
+            try
+            {
+                if(request.Rating < 1 || request.Rating > 5 || request.Rating % 0.5 != 0)
+                {
+                    return BadRequest("Rating not valid");
+                }
+
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                var reviewId = await _dataRepository.AddReview(productId, userId, request);
+                if(reviewId == -1)
+                {
+                    return NotFound();
+                }
+
+                return Ok(new { reviewId });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.ToString());
             }
         }
     }

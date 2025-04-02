@@ -563,5 +563,71 @@ namespace ThumbsUpGroceries_backend.Data
                 }
             }
         }
+
+        public async Task<int> AddReview(int productId, Guid userId, ReviewAddRequest request)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+                    // check if product exists
+                    var isProductExists = await connection.ExecuteScalarAsync<bool>(
+                        "SELECT 1 WHERE EXISTS(SELECT 1 FROM Product WHERE ProductId = @ProductId)",
+                        new { ProductId = productId }
+                    );
+                    if (!isProductExists)
+                    {
+                        return -1;
+                    }
+
+                    using (var transaction = await connection.BeginTransactionAsync())
+                    {
+                        try
+                        {
+                            // Insert Review
+                            var reviewId = await connection.QueryFirstOrDefaultAsync<int>(
+                                "INSERT INTO Review (ProductId, UserId, Comment, Rating) " +
+                                "OUTPUT INSERTED.ReviewId " +
+                                "VALUES (@ProductId, @UserId, @Comment, @Rating)",
+                                new
+                                {
+                                    ProductId = productId,
+                                    UserId = userId,
+                                    Comment = request.Comment,
+                                    Rating = request.Rating
+                                },
+                                transaction: transaction
+                            );
+
+                            // Update Product
+                            await connection.ExecuteAsync(
+                                "UPDATE Product SET " +
+                                "Rating = (SELECT AVG(Rating) FROM Review WHERE ProductId = @ProductId), " +
+                                "ReviewCount = (SELECT COUNT(*) FROM Review WHERE ProductId = @ProductId) " +
+                                "WHERE ProductId = @ProductId",
+                                new { ProductId = productId },
+                                transaction: transaction
+                            );
+
+                            // Commit the transaction
+                            await transaction.CommitAsync();
+
+                            return reviewId;
+                        }
+                        catch (Exception)
+                        {
+                            // Rollback the transaction if any error occurs
+                            await transaction.RollbackAsync();
+                            throw;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new Exception(e.ToString());
+                }
+            }
+        }
     }
 }
