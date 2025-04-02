@@ -209,7 +209,7 @@ namespace ThumbsUpGroceries_backend.Controllers
         {
             try
             {
-                if(request.Rating < 1 || request.Rating > 5 || request.Rating % 0.5 != 0)
+                if (request.Rating < 1 || request.Rating > 5 || request.Rating % 0.5 != 0)
                 {
                     return BadRequest("Rating not valid");
                 }
@@ -218,7 +218,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
                 var reviewId = await _dataRepository.AddReview(productId, userId, request);
-                if(reviewId == -1)
+                if (reviewId == -1)
                 {
                     return NotFound();
                 }
@@ -265,4 +265,5 @@ namespace ThumbsUpGroceries_backend.Controllers
                 return StatusCode(500);
             }
         }
+    }
 }
