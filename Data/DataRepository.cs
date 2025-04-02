@@ -625,7 +625,7 @@ namespace ThumbsUpGroceries_backend.Data
                 }
                 catch (Exception e)
                 {
-                    throw new Exception(e.ToString());
+                    throw new Exception("An error occurred while adding review");
                 }
             }
         }
