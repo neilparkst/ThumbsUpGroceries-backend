@@ -1,4 +1,6 @@
-﻿namespace ThumbsUpGroceries_backend.Data.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ThumbsUpGroceries_backend.Data.Models
 {
     public class Review
     {
@@ -21,7 +23,9 @@
 
     public class ReviewAddRequest
     {
+        [Required]
         public string Comment { get; set; }
+        [Required]
         public float Rating { get; set; }
     }
 
