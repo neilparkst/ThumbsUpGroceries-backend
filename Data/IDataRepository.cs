@@ -33,5 +33,7 @@ namespace ThumbsUpGroceries_backend.Data
         Task<bool> IsUserAuthorizedForReview(int productId, int reviewId, Guid userId);
 
         Task<int> UpdateReview(int productId, int reviewId, ReviewAddRequest request);
+
+        Task<int> RemoveReview(int productId, int reviewId);
     }
 }

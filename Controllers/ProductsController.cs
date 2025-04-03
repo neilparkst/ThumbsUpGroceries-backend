@@ -265,5 +265,30 @@ namespace ThumbsUpGroceries_backend.Controllers
                 return StatusCode(500);
             }
         }
+
+        [Authorize]
+        [HttpDelete("{productId}/reviews/{reviewId}")]
+        public async Task<ActionResult> RemoveReview(int productId, int reviewId)
+        {
+            try
+            {
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                var isAuthorized = await _dataRepository.IsUserAuthorizedForReview(productId, reviewId, userId);
+                if (!isAuthorized)
+                {
+                    return Unauthorized();
+                }
+
+                var _reviewId = await _dataRepository.RemoveReview(productId, reviewId);
+
+                return Ok(new { reviewId = _reviewId });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
     }
 }

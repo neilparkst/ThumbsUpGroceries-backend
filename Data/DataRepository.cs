@@ -708,5 +708,54 @@ namespace ThumbsUpGroceries_backend.Data
                 }
             }
         }
+
+        public async Task<int> RemoveReview(int productId, int reviewId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    using (var transaction = await connection.BeginTransactionAsync())
+                    {
+                        try
+                        {
+                            // Delete Review
+                            await connection.ExecuteAsync(
+                                "DELETE FROM Review WHERE ReviewId = @ReviewId",
+                                new { ReviewId = reviewId },
+                                transaction: transaction
+                            );
+
+                            // Update Product
+                            await connection.ExecuteAsync(
+                                "UPDATE Product SET " +
+                                "Rating = (SELECT AVG(Rating) FROM Review WHERE ProductId = @ProductId), " +
+                                "ReviewCount = (SELECT COUNT(*) FROM Review WHERE ProductId = @ProductId) " +
+                                "WHERE ProductId = @ProductId",
+                                new { ProductId = productId },
+                                transaction: transaction
+                            );
+
+                            // Commit the transaction
+                            await transaction.CommitAsync();
+
+                            return reviewId;
+                        }
+                        catch (Exception)
+                        {
+                            // Rollback the transaction if any error occurs
+                            await transaction.RollbackAsync();
+                            throw;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while deleting review");
+                }
+            }
+        }
     }
 }
