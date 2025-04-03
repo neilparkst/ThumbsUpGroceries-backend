@@ -203,6 +203,25 @@ namespace ThumbsUpGroceries_backend.Controllers
             }
         }
 
+        [HttpGet("{productId}/reviews")]
+        public async Task<ActionResult> GetReviews(int productId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var reviews = await _dataRepository.GetReviews(productId, page, pageSize);
+                if (reviews == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(reviews);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
         [Authorize]
         [HttpPost("{productId}/reviews")]
         public async Task<ActionResult> AddReview(int productId, [FromBody] ReviewAddRequest request)

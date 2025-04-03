@@ -28,6 +28,8 @@ namespace ThumbsUpGroceries_backend.Data
 
         Task<List<Product>> GetProductsBySearchAndCategory(int categoryId, string search, string sort, int page, int pageSize);
 
+        Task<List<ReviewManyResponse>> GetReviews(int productId, int page, int pageSize);
+
         Task<int> AddReview(int productId, Guid userId, ReviewAddRequest request);
         
         Task<bool> IsUserAuthorizedForReview(int productId, int reviewId, Guid userId);

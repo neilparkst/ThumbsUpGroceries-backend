@@ -9,9 +9,20 @@
         public float Rating { get; set; }
     }
 
+    public class ReviewManyResponse
+    {
+        public int ReviewId { get; set; }
+        public string UserName { get; set; }
+        public string Comment { get; set; }
+        public float Rating { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+    }
+
     public class ReviewAddRequest
     {
         public string Comment { get; set; }
         public float Rating { get; set; }
     }
+
 }

@@ -564,6 +564,36 @@ namespace ThumbsUpGroceries_backend.Data
             }
         }
 
+        public async Task<List<ReviewManyResponse>> GetReviews(int productId, int page, int pageSize)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var reviews = await connection.QueryAsync<ReviewManyResponse>(
+                        @"SELECT
+                            r.*, u.UserName 
+                        FROM
+                            Review r
+                        INNER JOIN 
+                            AppUser u ON r.UserId = u.UserId
+                        WHERE ProductId = @ProductId
+                        ORDER BY CreatedAt DESC
+                        OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY",
+                        new { ProductId = productId, Offset = (page - 1) * pageSize, PageSize = pageSize }
+                    );
+
+                    return reviews.ToList();
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching reviews");
+                }
+            }
+        }
+
         public async Task<int> AddReview(int productId, Guid userId, ReviewAddRequest request)
         {
             using (var connection = new SqlConnection(_connectionString))
