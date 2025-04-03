@@ -6,4 +6,10 @@
         public Guid UserId { get; set; }
         public int ItemCount { get; set; }
     }
+
+    public class TrolleyCountResponse
+    {
+        public int TrolleyId { get; set; }
+        public int ItemCount { get; set; }
+    }
 }

@@ -787,5 +787,37 @@ namespace ThumbsUpGroceries_backend.Data
                 }
             }
         }
+
+        public async Task<TrolleyCountResponse> GetTrolleyCount(Guid userId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var trolleyCountResponse = await connection.QueryFirstOrDefaultAsync<TrolleyCountResponse>(
+                        "SELECT * FROM Trolley WHERE UserId = @UserId",
+                        new { UserId = userId }
+                    );
+
+                    if (trolleyCountResponse == null)
+                    {
+                        trolleyCountResponse = await connection.QueryFirstAsync<TrolleyCountResponse>(
+                            "INSERT INTO Trolley (UserId, ItemCount) " +
+                            "OUTPUT INSERTED.TrolleyId, INSERTED.ItemCount " +
+                            "VALUES (@UserId, 0)",
+                            new { UserId = userId }
+                        );
+                    }
+
+                    return trolleyCountResponse;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching trolley count");
+                }
+            }
+        }
     }
 }

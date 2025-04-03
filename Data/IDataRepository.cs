@@ -37,5 +37,7 @@ namespace ThumbsUpGroceries_backend.Data
         Task<int> UpdateReview(int productId, int reviewId, ReviewAddRequest request);
 
         Task<int> RemoveReview(int productId, int reviewId);
+
+        Task<TrolleyCountResponse> GetTrolleyCount(Guid userId);
     }
 }
