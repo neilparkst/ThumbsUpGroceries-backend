@@ -819,5 +819,104 @@ namespace ThumbsUpGroceries_backend.Data
                 }
             }
         }
+
+        public async Task<TrolleyItemResponse> AddTrolleyItem(Guid userId, int productId, string priceUnitType, float quantity)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    if(quantity <= 0)
+                    {
+                        throw new InvalidDataException("Quantity must be greater than 0");
+                    }
+
+                    await connection.OpenAsync();
+
+                    // check if product exists
+                    var isProductExists = await connection.ExecuteScalarAsync<bool>(
+                        "SELECT 1 WHERE EXISTS(SELECT 1 FROM Product WHERE ProductId = @ProductId)",
+                        new { ProductId = productId }
+                    );
+                    if (!isProductExists)
+                    {
+                        throw new InvalidDataException("Product does not exist");
+                    }
+
+                    var trolleyId = await connection.QueryFirstOrDefaultAsync<int?>(
+                        "SELECT TrolleyId FROM Trolley WHERE UserId = @UserId",
+                        new { UserId = userId }
+                    );
+
+                    if (trolleyId == null)
+                    {
+                        trolleyId = await connection.QueryFirstAsync<int>(
+                            "INSERT INTO Trolley (UserId, ItemCount) " +
+                            "OUTPUT INSERTED.TrolleyId " +
+                            "VALUES (@UserId, 0)",
+                            new { UserId = userId }
+                        );
+                    }
+
+                    using(var transaction = await connection.BeginTransactionAsync())
+                    {
+                        try
+                        {
+                            // Insert or Update Trolley Item
+                            var trolleyItemResponse = await connection.QueryFirstAsync<TrolleyItemResponse>(
+                                @"
+                                    MERGE INTO TrolleyItem AS target
+                                    USING (VALUES (@TrolleyId, @ProductId, @PriceUnitType, @Quantity)) AS source (TrolleyId, ProductId, PriceUnitType, Quantity)
+                                        ON target.TrolleyId = source.TrolleyId
+                                           AND target.ProductId = source.ProductId
+                                           AND target.PriceUnitType = source.PriceUnitType
+                                    WHEN MATCHED THEN
+                                        UPDATE SET Quantity = target.Quantity + source.Quantity
+                                    WHEN NOT MATCHED THEN
+                                        INSERT (TrolleyId, ProductId, PriceUnitType, Quantity)
+                                        VALUES (source.TrolleyId, source.ProductId, source.PriceUnitType, source.Quantity)
+                                    OUTPUT INSERTED.TrolleyId, INSERTED.ProductId, INSERTED.PriceUnitType, INSERTED.Quantity;
+                                ",
+                                new
+                                {
+                                    TrolleyId = trolleyId,
+                                    ProductId = productId,
+                                    PriceUnitType = priceUnitType,
+                                    Quantity = quantity
+                                },
+                                transaction: transaction
+                            );
+
+                            // Update Trolley Item Count
+                            await connection.ExecuteAsync(
+                                "UPDATE Trolley " +
+                                "SET ItemCount = (SELECT COUNT(*) FROM TrolleyItem WHERE TrolleyId = @TrolleyId) " +
+                                "WHERE TrolleyId = @TrolleyId",
+                                new { TrolleyId = trolleyId },
+                                transaction: transaction
+                            );
+
+                            await transaction.CommitAsync();
+
+                            return trolleyItemResponse;
+                        }
+                        catch (Exception)
+                        {
+                            // Rollback the transaction if any error occurs
+                            await transaction.RollbackAsync();
+                            throw;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    if(e.GetType() == typeof(InvalidDataException))
+                    {
+                        throw e;
+                    }
+                    throw new Exception("An error occurred while adding to trolley");
+                }
+            }
+        }
     }
 }
