@@ -875,7 +875,7 @@ namespace ThumbsUpGroceries_backend.Data
                                     WHEN NOT MATCHED THEN
                                         INSERT (TrolleyId, ProductId, PriceUnitType, Quantity)
                                         VALUES (source.TrolleyId, source.ProductId, source.PriceUnitType, source.Quantity)
-                                    OUTPUT INSERTED.TrolleyId, INSERTED.ProductId, INSERTED.PriceUnitType, INSERTED.Quantity;
+                                    OUTPUT INSERTED.TrolleyItemId, INSERTED.ProductId, INSERTED.PriceUnitType, INSERTED.Quantity;
                                 ",
                                 new
                                 {

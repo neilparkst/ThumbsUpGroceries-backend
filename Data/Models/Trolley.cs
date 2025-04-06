@@ -27,7 +27,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
 
     public class TrolleyItemResponse
     {
-        public int TrolleyId { get; set; }
+        public int TrolleyItemId { get; set; }
         public int ProductId { get; set; }
         public string PriceUnitType { get; set; } = string.Empty;
         public float Quantity { get; set; }
