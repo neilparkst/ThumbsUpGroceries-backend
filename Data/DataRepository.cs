@@ -918,5 +918,60 @@ namespace ThumbsUpGroceries_backend.Data
                 }
             }
         }
+
+        public async Task<TrolleyItemResponse> UpdateTrolleyItem(Guid userId, int trolleyItemId, float quantity)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    if (quantity <= 0)
+                    {
+                        throw new InvalidDataException("Quantity must be greater than 0");
+                    }
+
+                    await connection.OpenAsync();
+
+                    // check if the user is authorised
+                    var isUserAuthorized = await connection.ExecuteScalarAsync<bool>(
+                        "SELECT 1 WHERE EXISTS(SELECT 1 FROM TrolleyItem WHERE TrolleyItemId = @TrolleyItemId AND TrolleyId IN (SELECT TrolleyId FROM Trolley WHERE UserId = @UserId))",
+                        new { TrolleyItemId = trolleyItemId, UserId = userId }
+                    );
+                    if (!isUserAuthorized)
+                    {
+                        throw new InvalidDataException("User is not authorized to update this trolley item");
+                    }
+
+                    // check if trolley item exists
+                    var isTrolleyItemExists = await connection.ExecuteScalarAsync<bool>(
+                        "SELECT 1 WHERE EXISTS(SELECT 1 FROM TrolleyItem WHERE TrolleyItemId = @TrolleyItemId)",
+                        new { TrolleyItemId = trolleyItemId }
+                    );
+                    if (!isTrolleyItemExists)
+                    {
+                        throw new InvalidDataException("Trolley item does not exist");
+                    }
+
+                    // Update Trolley Item
+                    var trolleyItemResponse = await connection.QueryFirstAsync<TrolleyItemResponse>(
+                        "UPDATE TrolleyItem " +
+                        "SET Quantity = @Quantity " +
+                        "OUTPUT INSERTED.TrolleyItemId, INSERTED.ProductId, INSERTED.PriceUnitType, INSERTED.Quantity " +
+                        "WHERE TrolleyItemId = @TrolleyItemId",
+                        new { TrolleyItemId = trolleyItemId, Quantity = quantity }
+                    );
+
+                    return trolleyItemResponse;
+                }
+                catch (Exception e)
+                {
+                    if (e.GetType() == typeof(InvalidDataException))
+                    {
+                        throw e;
+                    }
+                    throw new Exception("An error occurred while updating trolley item");
+                }
+            }
+        }
     }
 }
