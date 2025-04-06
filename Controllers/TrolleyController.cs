@@ -37,7 +37,7 @@ namespace ThumbsUpGroceries_backend.Controllers
 
         [Authorize]
         [HttpPost("")]
-        public async Task<IActionResult> AddToTrolley([FromBody] TrolleyItemRequest request)
+        public async Task<IActionResult> AddTrolleyItem([FromBody] TrolleyItemRequest request)
         {
             try
             {
