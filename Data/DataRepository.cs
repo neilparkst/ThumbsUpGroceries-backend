@@ -820,6 +820,38 @@ namespace ThumbsUpGroceries_backend.Data
             }
         }
 
+        public async Task<List<TrolleyItemMany>> GetTrolleyItems(int trolleyId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var trolleyItems = await connection.QueryAsync<TrolleyItemMany>(
+                        @"SELECT ti.*, p.Name AS ProductName, p.Price AS ProductPrice, p.PriceUnitType AS ProductPriceUnitType, p.Images AS Image
+                        FROM TrolleyItem ti
+                        INNER JOIN Product p ON ti.ProductId = p.ProductId
+                        WHERE TrolleyId = @TrolleyId",
+                        new { TrolleyId = trolleyId }
+                    );
+
+                    trolleyItems = trolleyItems.Select(trolleyItem =>
+                    {
+                        trolleyItem.Image = trolleyItem.Image.Split(',')[0] ?? string.Empty;
+                        trolleyItem.TotalPrice = trolleyItem.ProductPrice * trolleyItem.Quantity;
+                        return trolleyItem;
+                    });
+
+                    return trolleyItems.ToList();
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching trolley items");
+                }
+            }
+        }
+
         public async Task<TrolleyItem> AddTrolleyItem(Guid userId, int productId, string priceUnitType, float quantity)
         {
             using (var connection = new SqlConnection(_connectionString))

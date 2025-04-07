@@ -41,6 +41,43 @@ namespace ThumbsUpGroceries_backend.Controllers
         }
 
         [Authorize]
+        [HttpGet("")]
+        public async Task<ActionResult<TrolleyContentResponse>> GetTrolleyContent()
+        {
+            try
+            {
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                var trolley = await _dataRepository.GetTrolley(userId);
+                var trolleyItems = await _dataRepository.GetTrolleyItems(trolley.TrolleyId);
+
+                var subTotalPrice = trolleyItems.Sum(item => item.TotalPrice);
+                // TODO: change ServiceFee, BagFee, TotalPrice based on the membership type
+                var serviceFee = 0;
+                var bagFee = 0;
+                var totalPrice = subTotalPrice + serviceFee + bagFee;
+
+                var trolleyContentResponse = new TrolleyContentResponse
+                {
+                    TrolleyId = trolley.TrolleyId,
+                    ItemCount = trolley.ItemCount,
+                    Items = trolleyItems,
+                    SubTotalPrice = subTotalPrice,
+                    Method = trolley.Method,
+                    ServiceFee = serviceFee,
+                    BagFee = bagFee,
+                    TotalPrice = totalPrice
+                };
+                return Ok(trolleyContentResponse);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+        
+        [Authorize]
         [HttpPost("")]
         public async Task<IActionResult> AddTrolleyItem([FromBody] TrolleyItemRequest request)
         {
