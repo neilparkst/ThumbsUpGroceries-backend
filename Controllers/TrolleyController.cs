@@ -78,5 +78,33 @@ namespace ThumbsUpGroceries_backend.Controllers
                 return StatusCode(500);
             }
         }
+
+        [Authorize]
+        [HttpDelete("{trolleyItemId}")]
+        public async Task<IActionResult> RemoveTrolleyItem(int trolleyItemId)
+        {
+            try
+            {
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                var trolleyItem = await _dataRepository.RemoveTrolleyItem(userId, trolleyItemId);
+
+                var trolleyItemDeleteResponse = new TrolleyItemDeleteResponse
+                {
+                    TrolleyItemId = trolleyItem.TrolleyItemId,
+                    ProductId = trolleyItem.ProductId
+                };
+                return Ok(trolleyItemDeleteResponse);
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
     }
 }

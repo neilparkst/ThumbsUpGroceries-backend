@@ -973,5 +973,78 @@ namespace ThumbsUpGroceries_backend.Data
                 }
             }
         }
+
+        public async Task<TrolleyItem> RemoveTrolleyItem(Guid userId, int trolleyItemId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    // check if the user is authorised
+                    var isUserAuthorized = await connection.ExecuteScalarAsync<bool>(
+                        "SELECT 1 WHERE EXISTS(SELECT 1 FROM TrolleyItem WHERE TrolleyItemId = @TrolleyItemId AND TrolleyId IN (SELECT TrolleyId FROM Trolley WHERE UserId = @UserId))",
+                        new { TrolleyItemId = trolleyItemId, UserId = userId }
+                    );
+                    if (!isUserAuthorized)
+                    {
+                        throw new InvalidDataException("User is not authorized to delete this trolley item");
+                    }
+
+                    // check if trolley item exists
+                    var isTrolleyItemExists = await connection.ExecuteScalarAsync<bool>(
+                        "SELECT 1 WHERE EXISTS(SELECT 1 FROM TrolleyItem WHERE TrolleyItemId = @TrolleyItemId)",
+                        new { TrolleyItemId = trolleyItemId }
+                    );
+                    if (!isTrolleyItemExists)
+                    {
+                        throw new InvalidDataException("Trolley item does not exist");
+                    }
+
+                    using(var transaction = await connection.BeginTransactionAsync())
+                    {
+                        try
+                        {
+                            // Delete Trolley Item
+                            var trolleyItemResponse = await connection.QueryFirstAsync<TrolleyItem>(
+                                "DELETE FROM TrolleyItem " +
+                                "OUTPUT DELETED.* " +
+                                "WHERE TrolleyItemId = @TrolleyItemId",
+                                new { TrolleyItemId = trolleyItemId },
+                                transaction: transaction
+                            );
+
+                            // Update Trolley Item Count
+                            await connection.ExecuteAsync(
+                                "UPDATE Trolley " +
+                                "SET ItemCount = (SELECT COUNT(*) FROM TrolleyItem WHERE TrolleyId = @TrolleyId) " +
+                                "WHERE TrolleyId = @TrolleyId",
+                                new { TrolleyId = trolleyItemResponse.TrolleyId },
+                                transaction: transaction
+                            );
+
+                            await transaction.CommitAsync();
+
+                            return trolleyItemResponse;
+                        }
+                        catch (Exception)
+                        {
+                            // Rollback the transaction if any error occurs
+                            await transaction.RollbackAsync();
+                            throw;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    if (e.GetType() == typeof(InvalidDataException))
+                    {
+                        throw e;
+                    }
+                    throw new Exception("An error occurred while deleting trolley item");
+                }
+            }
+        }
     }
 }

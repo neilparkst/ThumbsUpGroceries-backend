@@ -9,6 +9,15 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public int ItemCount { get; set; }
     }
 
+    public class TrolleyItem
+    {
+        public int TrolleyItemId { get; set; }
+        public int TrolleyId { get; set; }
+        public int ProductId { get; set; }
+        public string PriceUnitType { get; set; } = string.Empty;
+        public float Quantity { get; set; }
+    }
+
     public class TrolleyCountResponse
     {
         public int TrolleyId { get; set; }
@@ -31,5 +40,11 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public int ProductId { get; set; }
         public string PriceUnitType { get; set; } = string.Empty;
         public float Quantity { get; set; }
+    }
+
+    public class TrolleyItemDeleteResponse
+    {
+        public int TrolleyItemId { get; set; }
+        public int ProductId { get; set; }
     }
 }
