@@ -44,7 +44,14 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var trolleyItemResponse = await _dataRepository.AddTrolleyItem(userId, request.ProductId, request.PriceUnitType, request.Quantity);
+                var trolleyItem = await _dataRepository.AddTrolleyItem(userId, request.ProductId, request.PriceUnitType, request.Quantity);
+                var trolleyItemResponse = new TrolleyItemResponse
+                {
+                    TrolleyItemId = trolleyItem.TrolleyItemId,
+                    ProductId = trolleyItem.ProductId,
+                    PriceUnitType = trolleyItem.PriceUnitType,
+                    Quantity = trolleyItem.Quantity
+                };
                 return Ok(trolleyItemResponse);
             }
             catch (InvalidDataException e)
@@ -66,7 +73,14 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var trolleyItemResponse = await _dataRepository.UpdateTrolleyItem(userId, trolleyItemId, request.Quantity);
+                var trolleyItem = await _dataRepository.UpdateTrolleyItem(userId, trolleyItemId, request.Quantity);
+                var trolleyItemResponse = new TrolleyItemResponse
+                {
+                    TrolleyItemId = trolleyItem.TrolleyItemId,
+                    ProductId = trolleyItem.ProductId,
+                    PriceUnitType = trolleyItem.PriceUnitType,
+                    Quantity = trolleyItem.Quantity
+                };
                 return Ok(trolleyItemResponse);
             }
             catch (InvalidDataException e)

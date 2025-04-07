@@ -820,7 +820,7 @@ namespace ThumbsUpGroceries_backend.Data
             }
         }
 
-        public async Task<TrolleyItemResponse> AddTrolleyItem(Guid userId, int productId, string priceUnitType, float quantity)
+        public async Task<TrolleyItem> AddTrolleyItem(Guid userId, int productId, string priceUnitType, float quantity)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -863,7 +863,7 @@ namespace ThumbsUpGroceries_backend.Data
                         try
                         {
                             // Insert or Update Trolley Item
-                            var trolleyItemResponse = await connection.QueryFirstAsync<TrolleyItemResponse>(
+                            var trolleyItemResponse = await connection.QueryFirstAsync<TrolleyItem>(
                                 @"
                                     MERGE INTO TrolleyItem AS target
                                     USING (VALUES (@TrolleyId, @ProductId, @PriceUnitType, @Quantity)) AS source (TrolleyId, ProductId, PriceUnitType, Quantity)
@@ -875,7 +875,7 @@ namespace ThumbsUpGroceries_backend.Data
                                     WHEN NOT MATCHED THEN
                                         INSERT (TrolleyId, ProductId, PriceUnitType, Quantity)
                                         VALUES (source.TrolleyId, source.ProductId, source.PriceUnitType, source.Quantity)
-                                    OUTPUT INSERTED.TrolleyItemId, INSERTED.ProductId, INSERTED.PriceUnitType, INSERTED.Quantity;
+                                    OUTPUT INSERTED.*;
                                 ",
                                 new
                                 {
@@ -919,7 +919,7 @@ namespace ThumbsUpGroceries_backend.Data
             }
         }
 
-        public async Task<TrolleyItemResponse> UpdateTrolleyItem(Guid userId, int trolleyItemId, float quantity)
+        public async Task<TrolleyItem> UpdateTrolleyItem(Guid userId, int trolleyItemId, float quantity)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -953,10 +953,10 @@ namespace ThumbsUpGroceries_backend.Data
                     }
 
                     // Update Trolley Item
-                    var trolleyItemResponse = await connection.QueryFirstAsync<TrolleyItemResponse>(
+                    var trolleyItemResponse = await connection.QueryFirstAsync<TrolleyItem>(
                         "UPDATE TrolleyItem " +
                         "SET Quantity = @Quantity " +
-                        "OUTPUT INSERTED.TrolleyItemId, INSERTED.ProductId, INSERTED.PriceUnitType, INSERTED.Quantity " +
+                        "OUTPUT INSERTED.* " +
                         "WHERE TrolleyItemId = @TrolleyItemId",
                         new { TrolleyItemId = trolleyItemId, Quantity = quantity }
                     );

@@ -40,9 +40,9 @@ namespace ThumbsUpGroceries_backend.Data
 
         Task<TrolleyCountResponse> GetTrolleyCount(Guid userId);
 
-        Task<TrolleyItemResponse> AddTrolleyItem(Guid userId, int productId, string priceUnitType, float quantity);
+        Task<TrolleyItem> AddTrolleyItem(Guid userId, int productId, string priceUnitType, float quantity);
 
-        Task<TrolleyItemResponse> UpdateTrolleyItem(Guid userId, int trolleyItemId, float quantity);
+        Task<TrolleyItem> UpdateTrolleyItem(Guid userId, int trolleyItemId, float quantity);
 
         Task<TrolleyItem> RemoveTrolleyItem(Guid userId, int trolleyItemId);
     }
