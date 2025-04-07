@@ -788,7 +788,7 @@ namespace ThumbsUpGroceries_backend.Data
             }
         }
 
-        public async Task<TrolleyCountResponse> GetTrolleyCount(Guid userId)
+        public async Task<Trolley> GetTrolley(Guid userId)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -796,22 +796,22 @@ namespace ThumbsUpGroceries_backend.Data
                 {
                     await connection.OpenAsync();
 
-                    var trolleyCountResponse = await connection.QueryFirstOrDefaultAsync<TrolleyCountResponse>(
+                    var trolley = await connection.QueryFirstOrDefaultAsync<Trolley>(
                         "SELECT * FROM Trolley WHERE UserId = @UserId",
                         new { UserId = userId }
                     );
 
-                    if (trolleyCountResponse == null)
+                    if (trolley == null)
                     {
-                        trolleyCountResponse = await connection.QueryFirstAsync<TrolleyCountResponse>(
+                        trolley = await connection.QueryFirstAsync<Trolley>(
                             "INSERT INTO Trolley (UserId, ItemCount) " +
-                            "OUTPUT INSERTED.TrolleyId, INSERTED.ItemCount " +
+                            "OUTPUT INSERTED.* " +
                             "VALUES (@UserId, 0)",
                             new { UserId = userId }
                         );
                     }
 
-                    return trolleyCountResponse;
+                    return trolley;
                 }
                 catch (Exception e)
                 {

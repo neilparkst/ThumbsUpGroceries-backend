@@ -26,7 +26,12 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var trolleyCountResponse = await _dataRepository.GetTrolleyCount(userId);
+                var trolley = await _dataRepository.GetTrolley(userId);
+                var trolleyCountResponse = new TrolleyCountResponse
+                {
+                    TrolleyId = trolley.TrolleyId,
+                    ItemCount = trolley.ItemCount
+                };
                 return Ok(trolleyCountResponse);
             }
             catch (Exception e)
