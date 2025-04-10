@@ -146,6 +146,36 @@ namespace ThumbsUpGroceries_backend.Data
             }
         }
 
+        public async Task<User> UpdateUserPassword(Guid userId, UserPasswordUpdateRequest request)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    // update password
+                    var user = await connection.QueryFirstOrDefaultAsync<User>(
+                        "UPDATE AppUser SET " +
+                        "PasswordHash = @PasswordHash " +
+                        "OUTPUT INSERTED.* " +
+                        "WHERE UserId = @UserId",
+                        new
+                        {
+                            UserId = userId,
+                            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword)
+                        }
+                    );
+
+                    return user;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while updating user password");
+                }
+            }
+        }
+
         public async Task<List<Category>> GetAllCategories()
         {
             using (var connection = new SqlConnection(_connectionString))

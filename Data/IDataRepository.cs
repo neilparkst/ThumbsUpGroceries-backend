@@ -12,6 +12,8 @@ namespace ThumbsUpGroceries_backend.Data
 
         Task<User> UpdateUserInfo(Guid userId, UserInfoUpdateRequest request);
 
+        Task<User> UpdateUserPassword(Guid userId, UserPasswordUpdateRequest request);
+
         Task<List<Category>> GetAllCategories();
 
         Task<Product?> GetProduct(int productId);

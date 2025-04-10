@@ -1,4 +1,6 @@
-﻿namespace ThumbsUpGroceries_backend.Data.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ThumbsUpGroceries_backend.Data.Models
 {
     public class User
     {
@@ -32,5 +34,13 @@
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? Address { get; set; }
+    }
+
+    public class UserPasswordUpdateRequest
+    {
+        [Required]
+        public string OldPassword { get; set; }
+        [Required]
+        public string NewPassword { get; set; }
     }
 }
