@@ -166,5 +166,28 @@ namespace ThumbsUpGroceries_backend.Controllers
                 return StatusCode(500);
             }
         }
+
+        [Authorize]
+        [HttpDelete("me")]
+        public async Task<ActionResult> DeleteMyAccount()
+        {
+            try
+            {
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                var user = await _dataRepository.DeleteUser(userId);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                return Ok(new { UserId = user.UserId });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
     }
 }

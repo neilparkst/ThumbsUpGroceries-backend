@@ -176,6 +176,30 @@ namespace ThumbsUpGroceries_backend.Data
             }
         }
 
+        public async Task<User> DeleteUser(Guid userId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var user = await connection.QueryFirstOrDefaultAsync<User>(
+                        "DELETE FROM AppUser " +
+                        "OUTPUT DELETED.* " +
+                        "WHERE UserId = @UserId",
+                        new { UserId = userId }
+                    );
+
+                    return user;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while deleting user info");
+                }
+            }
+        }
+
         public async Task<List<Category>> GetAllCategories()
         {
             using (var connection = new SqlConnection(_connectionString))
