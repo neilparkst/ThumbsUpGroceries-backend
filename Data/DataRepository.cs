@@ -87,6 +87,28 @@ namespace ThumbsUpGroceries_backend.Data
             }
         }
 
+        public async Task<User> GetUserInfoByUserId(Guid userId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var user = await connection.QueryFirstOrDefaultAsync<User>(
+                        "SELECT * FROM AppUser WHERE UserId = @UserId",
+                        new { UserId = userId }
+                    );
+
+                    return user;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching user info");
+                }
+            }
+        }
+
         public async Task<List<Category>> GetAllCategories()
         {
             using (var connection = new SqlConnection(_connectionString))
