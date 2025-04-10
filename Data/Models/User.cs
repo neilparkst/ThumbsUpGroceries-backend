@@ -24,4 +24,13 @@
         public string Address { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
     }
+
+    public class UserInfoUpdateRequest
+    {
+        public string? UserName { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? Address { get; set; }
+    }
 }

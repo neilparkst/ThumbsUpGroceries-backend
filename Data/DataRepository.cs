@@ -109,6 +109,43 @@ namespace ThumbsUpGroceries_backend.Data
             }
         }
 
+        public async Task<User> UpdateUserInfo(Guid userId, UserInfoUpdateRequest request)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var user = await connection.QueryFirstOrDefaultAsync<User>(
+                        "UPDATE AppUser SET " +
+                        "UserName = ISNULL(@UserName, UserName), " +
+                        "PhoneNumber = ISNULL(@PhoneNumber, PhoneNumber), " +
+                        "FirstName = ISNULL(@FirstName, FirstName), " +
+                        "LastName = ISNULL(@LastName, LastName), " +
+                        "Address = ISNULL(@Address, Address) " +
+                        "OUTPUT INSERTED.* " +
+                        "WHERE UserId = @UserId",
+                        new
+                        {
+                            UserId = userId,
+                            UserName = request.UserName,
+                            PhoneNumber = request.PhoneNumber,
+                            FirstName = request.FirstName,
+                            LastName = request.LastName,
+                            Address = request.Address
+                        }
+                    );
+
+                    return user;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while updating user info");
+                }
+            }
+        }
+
         public async Task<List<Category>> GetAllCategories()
         {
             using (var connection = new SqlConnection(_connectionString))

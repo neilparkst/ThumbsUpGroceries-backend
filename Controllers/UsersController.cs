@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using ThumbsUpGroceries_backend.Data;
 using ThumbsUpGroceries_backend.Data.Models;
 using ThumbsUpGroceries_backend.Service;
@@ -11,10 +15,12 @@ namespace ThumbsUpGroceries_backend.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IDataRepository _dataRepository;
+        private readonly IConfiguration _configuration;
 
-        public UsersController(IDataRepository dataRepository)
+        public UsersController(IDataRepository dataRepository, IConfiguration configuration)
         {
             _dataRepository = dataRepository;
+            _configuration = configuration;
         }
 
         [Authorize]
@@ -45,6 +51,55 @@ namespace ThumbsUpGroceries_backend.Controllers
                 };
 
                 return Ok(userInfoResponse);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
+        [Authorize]
+        [HttpPut("me")]
+        [HttpPatch("me")]
+        public async Task<ActionResult> UpdateMyInfo([FromBody] UserInfoUpdateRequest request)
+        {
+            try
+            {
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                var user = await _dataRepository.UpdateUserInfo(userId, request);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                var claims = new List<Claim>{
+                        new Claim("userId", user.UserId.ToString()),
+                        new Claim("email", user.Email),
+                        new Claim("userName", user.UserName ?? ""),
+                        new Claim("phoneNumber", user.PhoneNumber ?? ""),
+                        new Claim("firstName", user.FirstName ?? ""),
+                        new Claim("lastName", user.LastName ?? ""),
+                        new Claim("address", user.Address ?? ""),
+                        new Claim("role", user.Role)
+                    };
+
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]));
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                var accessToken = new JwtSecurityToken(
+                    issuer: _configuration["JwtSettings:Issuer"],
+                    audience: _configuration["JwtSettings:Audience"],
+                    claims: claims,
+                    expires: DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["JwtSettings:ExpiryMinutes"])),
+                    signingCredentials: creds
+                );
+
+                return Ok(new SigninResponse
+                {
+                    Token = new JwtSecurityTokenHandler().WriteToken(accessToken)
+                });
             }
             catch (Exception e)
             {
