@@ -65,7 +65,7 @@ namespace ThumbsUpGroceries_backend.Data
             }
         }
 
-        public async Task<DatabaseModel.AppUser> GetUserInfoByEmail(string email)
+        public async Task<User> GetUserInfoByEmail(string email)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -73,7 +73,7 @@ namespace ThumbsUpGroceries_backend.Data
                 {
                     await connection.OpenAsync();
 
-                    var user = await connection.QueryFirstOrDefaultAsync<DatabaseModel.AppUser>(
+                    var user = await connection.QueryFirstOrDefaultAsync<User>(
                         "SELECT * FROM AppUser WHERE Email = @Email",
                         new { Email = email }
                     );
