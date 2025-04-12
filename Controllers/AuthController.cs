@@ -3,8 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using ThumbsUpGroceries_backend.Data;
 using ThumbsUpGroceries_backend.Data.Models;
+using ThumbsUpGroceries_backend.Data.Repository;
 
 namespace ThumbsUpGroceries_backend.Controllers
 {
@@ -12,12 +12,12 @@ namespace ThumbsUpGroceries_backend.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IDataRepository _dataRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
 
-        public AuthController(IDataRepository dataRepository, IConfiguration configuration)
+        public AuthController(IUserRepository userRepository, IConfiguration configuration)
         {
-            _dataRepository = dataRepository;
+            _userRepository = userRepository;
             _configuration = configuration;
         }
 
@@ -26,7 +26,7 @@ namespace ThumbsUpGroceries_backend.Controllers
         {
             try
             {
-                var result = await _dataRepository.Signup(request);
+                var result = await _userRepository.Signup(request);
 
                 return Ok(result);
             }
@@ -45,7 +45,7 @@ namespace ThumbsUpGroceries_backend.Controllers
         {
             try
             {
-                var user = await _dataRepository.GetUserInfoByEmail(request.Email);
+                var user = await _userRepository.GetUserInfoByEmail(request.Email);
 
                 if (user == null)
                 {

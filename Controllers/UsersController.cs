@@ -4,8 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using ThumbsUpGroceries_backend.Data;
 using ThumbsUpGroceries_backend.Data.Models;
+using ThumbsUpGroceries_backend.Data.Repository;
 using ThumbsUpGroceries_backend.Service;
 
 namespace ThumbsUpGroceries_backend.Controllers
@@ -14,12 +14,12 @@ namespace ThumbsUpGroceries_backend.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IDataRepository _dataRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
 
-        public UsersController(IDataRepository dataRepository, IConfiguration configuration)
+        public UsersController(IUserRepository userRepository, IConfiguration configuration)
         {
-            _dataRepository = dataRepository;
+            _userRepository = userRepository;
             _configuration = configuration;
         }
 
@@ -32,7 +32,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var user = await _dataRepository.GetUserInfoByUserId(userId);
+                var user = await _userRepository.GetUserInfoByUserId(userId);
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -68,7 +68,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var user = await _dataRepository.UpdateUserInfo(userId, request);
+                var user = await _userRepository.UpdateUserInfo(userId, request);
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -116,7 +116,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var user = await _dataRepository.GetUserInfoByUserId(userId);
+                var user = await _userRepository.GetUserInfoByUserId(userId);
 
                 if (user == null)
                 {
@@ -128,7 +128,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                     return BadRequest("Old password is incorrect");
                 }
 
-                user = await _dataRepository.UpdateUserPassword(userId, request);
+                user = await _userRepository.UpdateUserPassword(userId, request);
 
                 var claims = new List<Claim>{
                         new Claim("userId", user.UserId.ToString()),
@@ -176,7 +176,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var user = await _dataRepository.DeleteUser(userId);
+                var user = await _userRepository.DeleteUser(userId);
                 if (user == null)
                 {
                     return NotFound("User not found");

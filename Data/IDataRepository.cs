@@ -4,18 +4,6 @@ namespace ThumbsUpGroceries_backend.Data
 {
     public interface IDataRepository
     {
-        Task<SignupResponse> Signup(SignupRequest request);
-
-        Task<User> GetUserInfoByEmail(string email);
-
-        Task<User> GetUserInfoByUserId(Guid userId);
-
-        Task<User> UpdateUserInfo(Guid userId, UserInfoUpdateRequest request);
-
-        Task<User> UpdateUserPassword(Guid userId, UserPasswordUpdateRequest request);
-
-        Task<User> DeleteUser(Guid userId);
-
         Task<List<Category>> GetAllCategories();
 
         Task<Product?> GetProduct(int productId);
