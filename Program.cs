@@ -39,9 +39,9 @@ namespace ThumbsUpGroceries_backend
             });
 
             // Add custom dependency injection
-            builder.Services.AddScoped<IDataRepository, DataRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<ITrolleyRepository, TrolleyRepository>();
             builder.Services.AddMemoryCache();
 
             var app = builder.Build();

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ThumbsUpGroceries_backend.Data;
 using ThumbsUpGroceries_backend.Data.Models;
+using ThumbsUpGroceries_backend.Data.Repository;
 using ThumbsUpGroceries_backend.Service;
 
 namespace ThumbsUpGroceries_backend.Controllers
@@ -10,11 +11,11 @@ namespace ThumbsUpGroceries_backend.Controllers
     [ApiController]
     public class TrolleyController : ControllerBase
     {
-        private readonly IDataRepository _dataRepository;
+        private readonly ITrolleyRepository _trolleyRepository;
 
-        public TrolleyController(IDataRepository dataRepository)
+        public TrolleyController(ITrolleyRepository trolleyRepository)
         {
-            _dataRepository = dataRepository;
+            _trolleyRepository = trolleyRepository;
         }
 
         [Authorize]
@@ -26,7 +27,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var trolley = await _dataRepository.GetTrolley(userId);
+                var trolley = await _trolleyRepository.GetTrolley(userId);
                 var trolleyCountResponse = new TrolleyCountResponse
                 {
                     TrolleyId = trolley.TrolleyId,
@@ -49,8 +50,8 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var trolley = await _dataRepository.GetTrolley(userId);
-                var trolleyItems = await _dataRepository.GetTrolleyItems(trolley.TrolleyId);
+                var trolley = await _trolleyRepository.GetTrolley(userId);
+                var trolleyItems = await _trolleyRepository.GetTrolleyItems(trolley.TrolleyId);
 
                 var subTotalPrice = trolleyItems.Sum(item => item.TotalPrice);
                 // TODO: change ServiceFee, BagFee, TotalPrice based on the membership type
@@ -86,7 +87,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var trolleyItem = await _dataRepository.AddTrolleyItem(userId, request.ProductId, request.PriceUnitType, request.Quantity);
+                var trolleyItem = await _trolleyRepository.AddTrolleyItem(userId, request.ProductId, request.PriceUnitType, request.Quantity);
                 var trolleyItemResponse = new TrolleyItemResponse
                 {
                     TrolleyItemId = trolleyItem.TrolleyItemId,
@@ -115,7 +116,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var trolleyItem = await _dataRepository.UpdateTrolleyItem(userId, trolleyItemId, request.Quantity);
+                var trolleyItem = await _trolleyRepository.UpdateTrolleyItem(userId, trolleyItemId, request.Quantity);
                 var trolleyItemResponse = new TrolleyItemResponse
                 {
                     TrolleyItemId = trolleyItem.TrolleyItemId,
@@ -144,7 +145,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var trolleyItem = await _dataRepository.RemoveTrolleyItem(userId, trolleyItemId);
+                var trolleyItem = await _trolleyRepository.RemoveTrolleyItem(userId, trolleyItemId);
 
                 var trolleyItemDeleteResponse = new TrolleyItemDeleteResponse
                 {

@@ -3,14 +3,14 @@
 using Microsoft.Data.SqlClient;
 using ThumbsUpGroceries_backend.Data.Models;
 
-namespace ThumbsUpGroceries_backend.Data
+namespace ThumbsUpGroceries_backend.Data.Repository
 {
-    public class DataRepository : IDataRepository
+    public class TrolleyRepository : ITrolleyRepository
     {
         private readonly string _connectionString;
         private readonly string _configuration;
 
-        public DataRepository(IConfiguration configuration)
+        public TrolleyRepository(IConfiguration configuration)
         {
             _connectionString = configuration["ConnectionStrings:DefaultConnection"];
         }
@@ -85,7 +85,7 @@ namespace ThumbsUpGroceries_backend.Data
             {
                 try
                 {
-                    if(quantity <= 0)
+                    if (quantity <= 0)
                     {
                         throw new InvalidDataException("Quantity must be greater than 0");
                     }
@@ -117,7 +117,7 @@ namespace ThumbsUpGroceries_backend.Data
                         );
                     }
 
-                    using(var transaction = await connection.BeginTransactionAsync())
+                    using (var transaction = await connection.BeginTransactionAsync())
                     {
                         try
                         {
@@ -169,7 +169,7 @@ namespace ThumbsUpGroceries_backend.Data
                 }
                 catch (Exception e)
                 {
-                    if(e.GetType() == typeof(InvalidDataException))
+                    if (e.GetType() == typeof(InvalidDataException))
                     {
                         throw e;
                     }
@@ -261,7 +261,7 @@ namespace ThumbsUpGroceries_backend.Data
                         throw new InvalidDataException("Trolley item does not exist");
                     }
 
-                    using(var transaction = await connection.BeginTransactionAsync())
+                    using (var transaction = await connection.BeginTransactionAsync())
                     {
                         try
                         {

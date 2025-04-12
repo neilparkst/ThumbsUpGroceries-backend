@@ -1,8 +1,8 @@
 ﻿using ThumbsUpGroceries_backend.Data.Models;
 
-namespace ThumbsUpGroceries_backend.Data
+namespace ThumbsUpGroceries_backend.Data.Repository
 {
-    public interface IDataRepository
+    public interface ITrolleyRepository
     {
         Task<Trolley> GetTrolley(Guid userId);
 
