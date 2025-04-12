@@ -7,7 +7,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public int TrolleyId { get; set; }
         public Guid UserId { get; set; }
         public int ItemCount { get; set; }
-        public string Method { get; set; } = string.Empty;
+        public TrolleyMethod Method { get; set; } = TrolleyMethod.pickup;
     }
 
     public class TrolleyItem
@@ -67,7 +67,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public int ItemCount { get; set; }
         public List<TrolleyItemMany> Items { get; set; } = new List<TrolleyItemMany>();
         public float SubTotalPrice { get; set; }
-        public string Method { get; set; } = string.Empty;
+        public TrolleyMethod Method { get; set; } = TrolleyMethod.pickup;
         public float ServiceFee { get; set; }
         public float BagFee { get; set; }
         public float TotalPrice { get; set; }

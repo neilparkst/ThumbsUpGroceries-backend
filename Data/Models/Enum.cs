@@ -5,4 +5,10 @@
         ea,
         kg
     }
+
+    public enum TrolleyMethod
+    {
+        delivery,
+        pickup
+    }
 }
