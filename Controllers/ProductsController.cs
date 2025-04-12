@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using ThumbsUpGroceries_backend.Data;
 using ThumbsUpGroceries_backend.Data.Models;
+using ThumbsUpGroceries_backend.Data.Repository;
 using ThumbsUpGroceries_backend.Service;
 
 namespace ThumbsUpGroceries_backend.Controllers
@@ -11,12 +12,12 @@ namespace ThumbsUpGroceries_backend.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly IDataRepository _dataRepository;
+        private readonly IProductRepository _productRepository;
         private readonly IMemoryCache _cache;
 
-        public ProductsController(IDataRepository dataRepository, IMemoryCache cache)
+        public ProductsController(IProductRepository productRepository, IMemoryCache cache)
         {
-            _dataRepository = dataRepository;
+            _productRepository = productRepository;
             _cache = cache;
         }
 
@@ -25,13 +26,13 @@ namespace ThumbsUpGroceries_backend.Controllers
         {
             try
             {
-                var product = await _dataRepository.GetProduct(productId);
+                var product = await _productRepository.GetProduct(productId);
                 if (product == null)
                 {
                     return NotFound();
                 }
 
-                var productCategories = await _dataRepository.GetCategoriesByProduct(productId);
+                var productCategories = await _productRepository.GetCategoriesByProduct(productId);
 
                 ProductResponse productResponse = new ProductResponse
                 {
@@ -61,7 +62,7 @@ namespace ThumbsUpGroceries_backend.Controllers
         {
             try
             {
-                var productId = await _dataRepository.AddProduct(reqeust);
+                var productId = await _productRepository.AddProduct(reqeust);
                 return Ok(new { productId });
             }
             catch (Exception e)
@@ -77,7 +78,7 @@ namespace ThumbsUpGroceries_backend.Controllers
         {
             try
             {
-                var _productId = await _dataRepository.UpdateProduct(productId, request);
+                var _productId = await _productRepository.UpdateProduct(productId, request);
                 if (_productId == -1)
                 {
                     return NotFound();
@@ -96,7 +97,7 @@ namespace ThumbsUpGroceries_backend.Controllers
         {
             try
             {
-                var _productId = await _dataRepository.RemoveProduct(productId);
+                var _productId = await _productRepository.RemoveProduct(productId);
                 if (_productId == -1)
                 {
                     return NotFound();
@@ -123,19 +124,19 @@ namespace ThumbsUpGroceries_backend.Controllers
                 List<Product> products;
                 if (categoryId != null && !String.IsNullOrEmpty(search))
                 {
-                    products = await _dataRepository.GetProductsBySearchAndCategory(categoryId.Value, search, sort, page, pageSize);
+                    products = await _productRepository.GetProductsBySearchAndCategory(categoryId.Value, search, sort, page, pageSize);
                 }
                 else if (categoryId != null)
                 {
-                    products = await _dataRepository.GetProductsByCategory(categoryId.Value, sort, page, pageSize);
+                    products = await _productRepository.GetProductsByCategory(categoryId.Value, sort, page, pageSize);
                 }
                 else if (!String.IsNullOrEmpty(search))
                 {
-                    products = await _dataRepository.GetProductsBySearch(search, sort, page, pageSize);
+                    products = await _productRepository.GetProductsBySearch(search, sort, page, pageSize);
                 }
                 else
                 {
-                    products = await _dataRepository.GetProducts(page, pageSize);
+                    products = await _productRepository.GetProducts(page, pageSize);
                 }
 
                 var productManyResponse = products.Select(p => new ProductManyResponse
@@ -173,7 +174,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 {
                     return Ok(cachedTree);
                 }
-                var categories = await _dataRepository.GetAllCategories();
+                var categories = await _productRepository.GetAllCategories();
                 var idToCategoryDto = categories.ToDictionary(c => c.CategoryId, c => new CategoryDto
                 {
                     CategoryId = c.CategoryId,
@@ -208,7 +209,7 @@ namespace ThumbsUpGroceries_backend.Controllers
         {
             try
             {
-                var reviews = await _dataRepository.GetReviews(productId, page, pageSize);
+                var reviews = await _productRepository.GetReviews(productId, page, pageSize);
                 if (reviews == null)
                 {
                     return NotFound();
@@ -236,7 +237,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var reviewId = await _dataRepository.AddReview(productId, userId, request);
+                var reviewId = await _productRepository.AddReview(productId, userId, request);
                 if (reviewId == -1)
                 {
                     return NotFound();
@@ -259,7 +260,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var isAuthorized = await _dataRepository.IsUserAuthorizedForReview(productId, reviewId, userId);
+                var isAuthorized = await _productRepository.IsUserAuthorizedForReview(productId, reviewId, userId);
                 if (!isAuthorized)
                 {
                     return Unauthorized();
@@ -271,7 +272,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 }
 
 
-                var _reviewId = await _dataRepository.UpdateReview(productId, reviewId, request);
+                var _reviewId = await _productRepository.UpdateReview(productId, reviewId, request);
                 if (_reviewId == -1)
                 {
                     return NotFound();
@@ -294,13 +295,13 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var isAuthorized = await _dataRepository.IsUserAuthorizedForReview(productId, reviewId, userId);
+                var isAuthorized = await _productRepository.IsUserAuthorizedForReview(productId, reviewId, userId);
                 if (!isAuthorized)
                 {
                     return Unauthorized();
                 }
 
-                var _reviewId = await _dataRepository.RemoveReview(productId, reviewId);
+                var _reviewId = await _productRepository.RemoveReview(productId, reviewId);
 
                 return Ok(new { reviewId = _reviewId });
             }
