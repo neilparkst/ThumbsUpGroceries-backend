@@ -15,7 +15,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public int TrolleyItemId { get; set; }
         public int TrolleyId { get; set; }
         public int ProductId { get; set; }
-        public string PriceUnitType { get; set; } = string.Empty;
+        public PriceUnitType PriceUnitType { get; set; } = PriceUnitType.ea;
         public float Quantity { get; set; }
     }
 
@@ -30,7 +30,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         [Required]
         public int ProductId { get; set; }
         [Required]
-        public string PriceUnitType { get; set; }
+        public PriceUnitType PriceUnitType { get; set; }
         [Required]
         public float Quantity { get; set; }
     }
@@ -39,7 +39,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
     {
         public int TrolleyItemId { get; set; }
         public int ProductId { get; set; }
-        public string PriceUnitType { get; set; } = string.Empty;
+        public PriceUnitType PriceUnitType { get; set; } = PriceUnitType.ea;
         public float Quantity { get; set; }
     }
 
@@ -55,7 +55,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public int ProductId { get; set; }
         public string ProductName { get; set; } = string.Empty;
         public float ProductPrice { get; set; }
-        public string ProductPriceUnitType { get; set; } = string.Empty;
+        public PriceUnitType ProductPriceUnitType { get; set; } = PriceUnitType.ea;
         public string Image { get; set; } = string.Empty;
         public float Quantity { get; set; }
         public float TotalPrice { get; set; }

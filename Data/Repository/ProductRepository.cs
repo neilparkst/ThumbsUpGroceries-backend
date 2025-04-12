@@ -125,7 +125,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                         {
                             Name = request.Name,
                             Price = request.Price,
-                            PriceUnitType = request.PriceUnitType,
+                            PriceUnitType = request.PriceUnitType.ToString(),
                             Description = request.Description ?? (object)DBNull.Value,
                             Images = imagePaths.Count > 0 ? string.Join(",", imagePaths) : (object)DBNull.Value,
                             Quantity = request.Quantity
@@ -249,7 +249,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                             {
                                 Name = request.Name,
                                 Price = request.Price,
-                                PriceUnitType = request.PriceUnitType,
+                                PriceUnitType = request.PriceUnitType.ToString(),
                                 Description = request.Description,
                                 Images = newImagePaths.Count > 0 ? string.Join(",", newImagePaths) : (object)DBNull.Value,
                                 Quantity = request.Quantity,

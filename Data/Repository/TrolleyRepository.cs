@@ -79,7 +79,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
             }
         }
 
-        public async Task<TrolleyItem> AddTrolleyItem(Guid userId, int productId, string priceUnitType, float quantity)
+        public async Task<TrolleyItem> AddTrolleyItem(Guid userId, int productId, PriceUnitType priceUnitType, float quantity)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -140,7 +140,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                                 {
                                     TrolleyId = trolleyId,
                                     ProductId = productId,
-                                    PriceUnitType = priceUnitType,
+                                    PriceUnitType = priceUnitType.ToString(),
                                     Quantity = quantity
                                 },
                                 transaction: transaction

@@ -7,7 +7,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public int ProductId { get; set; }
         public string Name { get; set; }
         public float Price { get; set; }
-        public string PriceUnitType { get; set; }
+        public PriceUnitType PriceUnitType { get; set; }
         public string? Description { get; set; }
         public string? Images { get; set; }
         public float Quantity { get; set; }
@@ -21,7 +21,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public int ProductId { get; set; }
         public string Name { get; set; } = string.Empty;
         public float Price { get; set; }
-        public string PriceUnitType { get; set; } = string.Empty;
+        public PriceUnitType PriceUnitType { get; set; } = PriceUnitType.ea;
         public string? Description { get; set; }
         public List<string>? Images { get; set; }
         public float Quantity { get; set; }
@@ -35,7 +35,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public int ProductId { get; set; }
         public string Name { get; set; } = string.Empty;
         public float Price { get; set; }
-        public string PriceUnitType { get; set; } = string.Empty;
+        public PriceUnitType PriceUnitType { get; set; } = PriceUnitType.ea;
         public string Image { get; set; } = string.Empty;
         public float Rating { get; set; }
         public int ReviewCount { get; set; }
@@ -48,7 +48,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         [Required]
         public float? Price { get; set; }
         [Required]
-        public string PriceUnitType { get; set; }
+        public PriceUnitType PriceUnitType { get; set; }
         public string? Description { get; set; }
         public List<IFormFile>? Images { get; set; }
         [Required]
@@ -61,7 +61,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
     {
         public string? Name { get; set; }
         public float? Price { get; set; }
-        public string? PriceUnitType { get; set; }
+        public PriceUnitType? PriceUnitType { get; set; }
         public string? Description { get; set; }
         public List<IFormFile>? Images { get; set; }
         public float? Quantity { get; set; }

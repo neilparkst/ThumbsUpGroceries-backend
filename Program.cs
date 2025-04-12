@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 using ThumbsUpGroceries_backend.Data;
 using ThumbsUpGroceries_backend.Data.Repository;
 
@@ -37,6 +38,13 @@ namespace ThumbsUpGroceries_backend
                 };
                 options.MapInboundClaims = false;
             });
+
+            // Configure JSON serializer options
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
 
             // Add custom dependency injection
             builder.Services.AddScoped<IUserRepository, UserRepository>();
