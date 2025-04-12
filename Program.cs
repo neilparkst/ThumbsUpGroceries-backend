@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
-using ThumbsUpGroceries_backend.Data;
 using ThumbsUpGroceries_backend.Data.Repository;
 
 namespace ThumbsUpGroceries_backend
