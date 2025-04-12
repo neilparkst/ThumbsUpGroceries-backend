@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ThumbsUpGroceries_backend.Data;
+using ThumbsUpGroceries_backend.Data.Repository;
 
 namespace ThumbsUpGroceries_backend
 {
@@ -39,6 +40,7 @@ namespace ThumbsUpGroceries_backend
 
             // Add custom dependency injection
             builder.Services.AddScoped<IDataRepository, DataRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddMemoryCache();
 
             var app = builder.Build();
