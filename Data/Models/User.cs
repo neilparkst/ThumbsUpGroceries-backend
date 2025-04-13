@@ -29,10 +29,15 @@ namespace ThumbsUpGroceries_backend.Data.Models
 
     public class UserInfoUpdateRequest
     {
+        [StringLength(100)]
         public string? UserName { get; set; }
+        [StringLength(100)]
         public string? PhoneNumber { get; set; }
+        [StringLength(100)]
         public string? FirstName { get; set; }
+        [StringLength(100)]
         public string? LastName { get; set; }
+        [StringLength(255)]
         public string? Address { get; set; }
     }
 

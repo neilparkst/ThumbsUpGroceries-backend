@@ -44,6 +44,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public class ProductAddRequest
     {
         [Required]
+        [StringLength(255)]
         public string Name { get; set; }
         [Required]
         public float? Price { get; set; }
@@ -59,6 +60,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
 
     public class ProductUpdateRequest
     {
+        [StringLength(255)]
         public string? Name { get; set; }
         public float? Price { get; set; }
         public PriceUnitType? PriceUnitType { get; set; }
