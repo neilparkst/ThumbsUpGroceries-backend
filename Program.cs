@@ -1,6 +1,7 @@
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Stripe;
 using System.Text;
 using System.Text.Json.Serialization;
 using ThumbsUpGroceries_backend.Data.Repository;
@@ -37,6 +38,9 @@ namespace ThumbsUpGroceries_backend
                 };
                 options.MapInboundClaims = false;
             });
+
+            // Configure Stripe settings
+            StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
             // Configure JSON serializer options
             builder.Services.AddControllers()
