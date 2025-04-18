@@ -72,4 +72,39 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public float BagFee { get; set; }
         public float TotalPrice { get; set; }
     }
+
+    public class TrolleyItemForValidationRequest
+    {
+        [Required]
+        public int ProductId { get; set; }
+        [Required]
+        public PriceUnitType PriceUnitType { get; set; }
+        [Required]
+        public float Quantity { get; set; }
+        [Required]
+        public float TotalPrice { get; set; }
+    }
+
+    public class TrolleyValidationRequest
+    {
+        [Required]
+        public int TrolleyId { get; set; }
+        [Required]
+        public List<TrolleyItemForValidationRequest> Items { get; set; }
+        [Required]
+        public float SubTotalPrice { get; set; }
+        [Required]
+        public TrolleyMethod Method { get; set; }
+        [Required]
+        public float ServiceFee { get; set; }
+        [Required]
+        public float BagFee { get; set; }
+        [Required]
+        public float TotalPrice { get; set; }
+    }
+
+    public class TrolleyValidationResponse
+    {
+        public bool IsValid { get; set; }
+    }
 }
