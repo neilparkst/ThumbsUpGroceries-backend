@@ -219,10 +219,10 @@ namespace ThumbsUpGroceries_backend.Controllers
                                 Currency = "nzd",
                                 ProductData = new SessionLineItemPriceDataProductDataOptions
                                 {
-                                    Name = "Bag Fee"
+                                    Name = "Bag Fee",
                                 }
                             },
-                            Quantity = 1
+                            Quantity = 1,
                         }
                     },
                     ShippingOptions = new List<SessionShippingOptionOptions> // delivery or pickup fee
@@ -248,6 +248,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                     {
                         { "userId", userId.ToString() },
                         { "trolleyId", request.TrolleyId.ToString() },
+                        { "serviceMethod", trolley.Method.ToString() },
                         { "chosenDate", request.ChosenDate.ToString("yyyy-MM-ddTHH:mm:ss") },
                         { "chosenAddress", request.ChosenAddress }
                     },
@@ -266,7 +267,12 @@ namespace ThumbsUpGroceries_backend.Controllers
                                 Currency = "nzd",
                                 ProductData = new SessionLineItemPriceDataProductDataOptions
                                 {
-                                    Name = trolleyItem.ProductName
+                                    Name = trolleyItem.ProductName,
+                                    Metadata = new Dictionary<string, string>
+                                    {
+                                        { "productId", trolleyItem.ProductId.ToString() },
+                                        { "productPriceUnitType", trolleyItem.ProductPriceUnitType.ToString() }
+                                    }
                                 }
                             },
                             Quantity = (long)trolleyItem.Quantity
@@ -283,7 +289,15 @@ namespace ThumbsUpGroceries_backend.Controllers
                                 Currency = "nzd",
                                 ProductData = new SessionLineItemPriceDataProductDataOptions
                                 {
-                                    Name = trolleyItem.ProductName + $" {trolleyItem.Quantity}kg"
+                                    Name = trolleyItem.ProductName + $" {trolleyItem.Quantity}kg",
+                                    Metadata = new Dictionary<string, string>
+                                    {
+                                        { "productId", trolleyItem.ProductId.ToString() },
+                                        { "productPriceUnitType", trolleyItem.ProductPriceUnitType.ToString() },
+                                        { "productName", trolleyItem.ProductName },
+                                        { "productPrice", trolleyItem.ProductPrice.ToString() },
+                                        { "quantity", trolleyItem.Quantity.ToString() }
+                                    }
                                 }
                             },
                             Quantity = 1
