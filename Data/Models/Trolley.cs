@@ -78,6 +78,8 @@ namespace ThumbsUpGroceries_backend.Data.Models
         [Required]
         public int ProductId { get; set; }
         [Required]
+        public float ProductPrice { get; set; }
+        [Required]
         public PriceUnitType PriceUnitType { get; set; }
         [Required]
         public float Quantity { get; set; }

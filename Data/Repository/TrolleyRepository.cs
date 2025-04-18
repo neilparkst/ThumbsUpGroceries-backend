@@ -305,5 +305,81 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                 }
             }
         }
+
+        public async Task<bool> ValidateTrolley(Guid userId, TrolleyValidationRequest request)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    // check if the user is authorised
+                    var isUserAuthorized = await connection.ExecuteScalarAsync<bool>(
+                        "SELECT 1 WHERE EXISTS(SELECT 1 FROM Trolley WHERE TrolleyId = @TrolleyId AND UserId = @UserId)",
+                        new { UserId = userId, TrolleyId = request.TrolleyId }
+                    );
+                    if (!isUserAuthorized)
+                    {
+                        throw new InvalidDataException("User is not authorized to validate this trolley");
+                    }
+
+                    // Validate Trolley
+                    var trolleyItems = request.Items;
+                    var productIds = trolleyItems.Select(t => t.ProductId).ToList();
+                    var products = await connection.QueryAsync<Product>(
+                        "SELECT * FROM Product WHERE ProductId IN @ProductIds",
+                        new { ProductIds = productIds }
+                    );
+                    if(products.Count() != trolleyItems.Count)
+                    {
+                        throw new InvalidDataException("Some products do not exist in the trolley");
+                    }
+                    foreach (var trolleyItem in trolleyItems)
+                    {
+                        // check if quantity is valid
+                        if (trolleyItem.Quantity <= 0)
+                        {
+                            throw new InvalidDataException($"Quantity for product with ID {trolleyItem.ProductId} must be greater than 0");
+                        }
+
+                        // compare with current product information
+                        var product = products.FirstOrDefault(p => p.ProductId == trolleyItem.ProductId);
+                        if (product == null)
+                        {
+                            throw new InvalidDataException($"Product with ID {trolleyItem.ProductId} does not exist");
+                        }
+                        if (product.PriceUnitType != trolleyItem.PriceUnitType)
+                        {
+                            throw new InvalidDataException($"Product with ID {trolleyItem.ProductId} has a different price unit type");
+                        }
+                        if((product.Price != trolleyItem.ProductPrice) || (trolleyItem.ProductPrice * trolleyItem.Quantity != trolleyItem.TotalPrice))
+                        {
+                            return false;
+                        }
+                    }
+                    if(request.SubTotalPrice != trolleyItems.Sum(t => t.TotalPrice))
+                    {
+                        return false;
+                    }
+                    // TODO: get membership data to check serviceFee and bagFee
+
+                    if(request.TotalPrice != request.SubTotalPrice + request.ServiceFee + request.BagFee)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    if (e.GetType() == typeof(InvalidDataException))
+                    {
+                        throw e;
+                    }
+                    throw new Exception("An error occurred while validating trolley");
+                }
+            }
+        }
     }
 }

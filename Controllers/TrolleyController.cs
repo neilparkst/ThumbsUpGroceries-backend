@@ -163,5 +163,31 @@ namespace ThumbsUpGroceries_backend.Controllers
                 return StatusCode(500);
             }
         }
+
+        [Authorize]
+        [HttpPost("validation")]
+        public async Task<IActionResult> ValidateTrolley([FromBody] TrolleyValidationRequest request)
+        {
+            try
+            {
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                var isTrolleyValid = await _trolleyRepository.ValidateTrolley(userId, request);
+                var trolleyValidationResponse = new TrolleyValidationResponse
+                {
+                    IsValid = isTrolleyValid
+                };
+                return Ok(trolleyValidationResponse);
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
     }
 }
