@@ -109,4 +109,18 @@ namespace ThumbsUpGroceries_backend.Data.Models
     {
         public bool IsValid { get; set; }
     }
+
+    public class CheckoutSessionRequest
+    {
+        [Required]
+        public int TrolleyId { get; set; }
+        [Required]
+        public DateTime ChosenDate { get; set; }
+        [Required]
+        public string ChosenAddress { get; set; }
+        [Required]
+        public string SuccessUrl { get; set; }
+        [Required]
+        public string CancelUrl { get; set; }
+    }
 }

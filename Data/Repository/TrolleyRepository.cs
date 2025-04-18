@@ -47,6 +47,33 @@ namespace ThumbsUpGroceries_backend.Data.Repository
             }
         }
 
+        public async Task<Trolley> GetTrolleyByTrolleyId(int trolleyId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var trolley = await connection.QueryFirstOrDefaultAsync<Trolley>(
+                        "SELECT * FROM Trolley WHERE TrolleyId = @TrolleyId",
+                        new { TrolleyId = trolleyId }
+                    );
+
+                    if (trolley == null)
+                    {
+                        throw new InvalidDataException("Trolley does not exist");
+                    }
+
+                    return trolley;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching trolley count");
+                }
+            }
+        }
+
         public async Task<List<TrolleyItemMany>> GetTrolleyItems(int trolleyId)
         {
             using (var connection = new SqlConnection(_connectionString))

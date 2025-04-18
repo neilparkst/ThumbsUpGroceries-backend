@@ -6,6 +6,8 @@ namespace ThumbsUpGroceries_backend.Data.Repository
     {
         Task<Trolley> GetTrolley(Guid userId);
 
+        Task<Trolley> GetTrolleyByTrolleyId(int trolleyId);
+
         Task<List<TrolleyItemMany>> GetTrolleyItems(int trolleyId);
 
         Task<TrolleyItem> AddTrolleyItem(Guid userId, int productId, PriceUnitType priceUnitType, float quantity);
