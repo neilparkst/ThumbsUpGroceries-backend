@@ -42,10 +42,16 @@ namespace ThumbsUpGroceries_backend.Controllers
                         return BadRequest("Invalid session data");
                     }
 
+                    var options = new SessionGetOptions
+                    {
+                        Expand = new List<string> { "line_items", "line_items.data.price.product" },
+                    };
+                    var service = new SessionService();
+                    session = service.Get(session.Id, options);
+
                     // about payment information
                     var transactionId = session.PaymentIntentId;
-                    var paymentMethod = $"{session.PaymentIntent.PaymentMethod.Card.Brand}: **** **** **** {session.PaymentIntent.PaymentMethod.Card.Last4}";
-
+                    
                     // about metadata
                     var userId = session.Metadata["userId"];
                     var trolleyId = session.Metadata["trolleyId"];
@@ -122,16 +128,16 @@ namespace ThumbsUpGroceries_backend.Controllers
                                 );
 
                                 // create order
-                                var orderId = await connection.ExecuteAsync(
-                                    "INSERT INTO ProductOrder (UserId, ServiceMethod, ChosenDate, ChosenAddress, PaymentMethod, TransactionId, ServiceFee, BagFee, SubTotalAmount, TotalAmount, OrderStatus) " +
-                                    "VALUES (@UserId, @ServiceMethod, @ChosenDate, @ChosenAddress, @PaymentMethod, @TransactionId, @ServiceFee, @BagFee, @SubTotalAmount, @TotalAmount, @OrderStatus)",
+                                var orderId = await connection.ExecuteScalarAsync<int>(
+                                    "INSERT INTO ProductOrder (UserId, ServiceMethod, ChosenDate, ChosenAddress, TransactionId, ServiceFee, BagFee, SubTotalAmount, TotalAmount, OrderStatus) " +
+                                    "OUTPUT INSERTED.OrderId " +
+                                    "VALUES (@UserId, @ServiceMethod, @ChosenDate, @ChosenAddress, @TransactionId, @ServiceFee, @BagFee, @SubTotalAmount, @TotalAmount, @OrderStatus)",
                                     new
                                     {
                                         UserId = Guid.Parse(userId),
                                         ServiceMethod = serviceMethod,
                                         ChosenDate = DateTime.Parse(chosenDate),
                                         ChosenAddress = chosenAddress,
-                                        PaymentMethod = paymentMethod,
                                         TransactionId = transactionId,
                                         ServiceFee = (double)serviceFeeInCents / 100,
                                         BagFee = (double)bagFeeInCents / 100,
@@ -142,9 +148,34 @@ namespace ThumbsUpGroceries_backend.Controllers
                                     transaction
                                 );
 
+                                // create order items
+                                foreach (var product in products)
+                                {
+                                    var productPriceUnitType = product.Metadata["productPriceUnitType"];
+                                    var productId = int.Parse(product.Metadata["productId"]);
+                                    var quantity = productPriceUnitType == "ea" ? (double)product.Quantity : double.Parse(product.Metadata["quantity"]);
+                                    var productName = productPriceUnitType == "ea" ? product.Name : product.Metadata["productName"];
+
+                                    await connection.ExecuteAsync(
+                                        "INSERT INTO ProductOrderItem (OrderId, ProductId, Price, PriceUnitType, Quantity, TotalPrice, ProductName) " +
+                                        "VALUES (@OrderId, @ProductId, @Price, @PriceUnitType, @Quantity, @TotalPrice, @ProductName)",
+                                        new
+                                        {
+                                            OrderId = orderId,
+                                            ProductId = productId,
+                                            Price = (double)product.UnitAmount / 100,
+                                            PriceUnitType = productPriceUnitType,
+                                            Quantity = quantity,
+                                            TotalPrice = (double)product.UnitAmount * quantity / 100,
+                                            ProductName = productName
+                                        },
+                                        transaction
+                                    );
+                                }
+
                                 await transaction.CommitAsync();
                             }
-                            catch (Exception)
+                            catch (Exception e)
                             {
                                 // Rollback the transaction if any error occurs
                                 await transaction.RollbackAsync();
