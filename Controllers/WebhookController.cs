@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using Stripe;
 using Stripe.Checkout;
+using ThumbsUpGroceries_backend.Data.Models;
 
 namespace ThumbsUpGroceries_backend.Controllers
 {
@@ -169,6 +170,75 @@ namespace ThumbsUpGroceries_backend.Controllers
                                             TotalPrice = (double)product.UnitAmount * quantity / 100,
                                             ProductName = productName
                                         },
+                                        transaction
+                                    );
+                                }
+
+                                await transaction.CommitAsync();
+                            }
+                            catch (Exception e)
+                            {
+                                // Rollback the transaction if any error occurs
+                                await transaction.RollbackAsync();
+                                throw;
+                            }
+                        }
+                    }
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPost("orders/refund")]
+        public async Task<IActionResult> OrderRefundWebhook()
+        {
+            try
+            {
+                // Configure stripe event
+                var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+                var stripeEvent = EventUtility.ConstructEvent(
+                    json,
+                    Request.Headers["Stripe-Signature"],
+                    webhookSecretKey
+                );
+
+                // Handle the event
+                if (stripeEvent.Type == EventTypes.ChargeRefunded)
+                {
+                    var charge = stripeEvent.Data.Object as Charge;
+                    var paymentIntentId = charge.PaymentIntentId;
+
+                    // manipulate the database
+                    using (var connection = new SqlConnection(_connectionString))
+                    {
+                        await connection.OpenAsync();
+                        using (var transaction = await connection.BeginTransactionAsync())
+                        {
+                            try
+                            {
+                                // update order status
+                                await connection.ExecuteAsync(
+                                    "UPDATE ProductOrder SET OrderStatus = @OrderStatus WHERE TransactionId = @TransactionId",
+                                    new { OrderStatus = OrderStatus.canceled.ToString(), TransactionId = paymentIntentId },
+                                    transaction
+                                );
+
+                                // restore the product quantity
+                                var orderItems = await connection.QueryAsync<OrderItem>(
+                                    "SELECT * FROM ProductOrderItem WHERE OrderId = (SELECT OrderId FROM ProductOrder WHERE TransactionId = @TransactionId)",
+                                    new { TransactionId = paymentIntentId },
+                                    transaction
+                                );
+                                foreach (var orderItem in orderItems)
+                                {
+                                    await connection.ExecuteAsync(
+                                        "UPDATE Product SET Quantity = Quantity + @Quantity WHERE ProductId = @ProductId",
+                                        new { Quantity = orderItem.Quantity, ProductId = orderItem.ProductId },
                                         transaction
                                     );
                                 }

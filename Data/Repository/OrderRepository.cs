@@ -96,5 +96,46 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                 }
             }
         }
+
+        public async Task<Order> CancelOrder(int orderId, Guid userId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    var order = await connection.QueryFirstOrDefaultAsync<Order>(
+                        "SELECT * FROM ProductOrder WHERE OrderId = @OrderId AND UserId = @UserId",
+                        new { OrderId = orderId, UserId = userId }
+                    );
+
+                    if (order == null)
+                    {
+                        throw new InvalidDataException("Order not found");
+                    }
+                    else if(order.OrderStatus != OrderStatus.registered)
+                    {
+                        throw new InvalidDataException("Order cannot be canceled");
+                    }
+
+                    var result = await connection.QueryFirstAsync<Order>(
+                        "UPDATE ProductOrder " +
+                        "SET OrderStatus = @OrderStatus " +
+                        "OUTPUT INSERTED.* " +
+                        "WHERE OrderId = @OrderId",
+                        new { OrderStatus = OrderStatus.canceling.ToString(), OrderId = order.OrderId }
+                    );
+
+                    return result;
+                }
+                catch (Exception e)
+                {
+                    if (e.GetType() == typeof(InvalidDataException))
+                    {
+                        throw e;
+                    }
+                    throw new Exception("An error occurred while canceling the order");
+                }
+            }
+        }
     }
 }

@@ -7,5 +7,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
         Task<List<Order>> GetOrders(Guid userId);
 
         Task<OrderContent> GetOrder(int orderId, Guid userId);
+
+        Task<Order> CancelOrder(int orderId, Guid userId);
     }
 }

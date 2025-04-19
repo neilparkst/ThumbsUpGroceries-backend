@@ -17,6 +17,7 @@
         registered,
         onDelivery,
         completed,
+        canceling,
         canceled
     }
 }
