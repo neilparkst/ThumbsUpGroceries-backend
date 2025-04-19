@@ -32,8 +32,8 @@
         public int OrderItemId { get; set; }
         public int ProductId { get; set; }
         public string ProductName { get; set; } = string.Empty;
-        public float ProductPrice { get; set; }
-        public PriceUnitType ProductPriceUnitType { get; set; } = PriceUnitType.ea;
+        public float Price { get; set; }
+        public PriceUnitType PriceUnitType { get; set; } = PriceUnitType.ea;
         public string? Image { get; set; }
         public float Quantity { get; set; }
         public float TotalPrice { get; set; }

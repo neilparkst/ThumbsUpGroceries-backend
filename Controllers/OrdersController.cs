@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ThumbsUpGroceries_backend.Data.Models;
 using ThumbsUpGroceries_backend.Data.Repository;
 using ThumbsUpGroceries_backend.Service;
@@ -16,6 +17,7 @@ namespace ThumbsUpGroceries_backend.Controllers
             _orderRepository = orderRepository;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetOrders()
         {
@@ -40,6 +42,29 @@ namespace ThumbsUpGroceries_backend.Controllers
             catch (Exception e)
             {
                 return StatusCode(500, "An error occurred while fetching orders");
+            }
+        }
+
+        [Authorize]
+        [HttpGet("{orderId}")]
+        public async Task<IActionResult> GetOrder(int orderId)
+        {
+            try
+            {
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                var orderContent = await _orderRepository.GetOrder(orderId, userId);
+
+                return Ok(orderContent);
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, "An error occurred while fetching the order");
             }
         }
     }
