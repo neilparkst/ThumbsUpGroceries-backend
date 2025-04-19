@@ -8,7 +8,6 @@ namespace ThumbsUpGroceries_backend.Data.Repository
     public class TrolleyRepository : ITrolleyRepository
     {
         private readonly string _connectionString;
-        private readonly string _configuration;
 
         public TrolleyRepository(IConfiguration configuration)
         {
