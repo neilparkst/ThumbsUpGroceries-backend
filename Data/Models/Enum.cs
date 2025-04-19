@@ -11,4 +11,12 @@
         delivery,
         pickup
     }
+
+    public enum OrderStatus
+    {
+        registered,
+        onDelivery,
+        completed,
+        canceled
+    }
 }
