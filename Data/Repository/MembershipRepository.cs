@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
+using ThumbsUpGroceries_backend.Data.Models;
 
 namespace ThumbsUpGroceries_backend.Data.Repository
 {
@@ -37,6 +38,34 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                         throw e;
                     }
                     throw new Exception("An error occurred while fetching the price ID");
+                }
+            }
+        }
+
+        public async Task<string?> GetCurrentUserMembership(Guid userId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    var membershipPlanId = await connection.QueryFirstOrDefaultAsync<int?>(
+                        "SELECT PlanId FROM UserMembership WHERE UserId = @UserId AND Status = @Status",
+                        new { UserId = userId, Status = MembershipStatus.active.ToString() }
+                    );
+                    if (membershipPlanId == null)
+                    {
+                        return null;
+                    }
+                    var membership = await connection.QueryFirstOrDefaultAsync<string>(
+                        "SELECT Name FROM MembershipPlan WHERE PlanId = @PlanId",
+                        new { PlanId = membershipPlanId }
+                    );
+
+                    return membership;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching the current user membership");
                 }
             }
         }

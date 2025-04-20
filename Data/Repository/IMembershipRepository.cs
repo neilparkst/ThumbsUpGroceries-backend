@@ -3,5 +3,7 @@
     public interface IMembershipRepository
     {
         public Task<string> GetStripePriceIdByPlanId(int planId);
+
+        public Task<string?> GetCurrentUserMembership(Guid userId);
     }
 }
