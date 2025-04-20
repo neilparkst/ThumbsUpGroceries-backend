@@ -13,9 +13,12 @@ namespace ThumbsUpGroceries_backend.Controllers
     public class MembershipController : ControllerBase
     {
         private readonly IMembershipRepository _membershipRepository;
-        public MembershipController(IMembershipRepository membershipRepository)
+        private readonly IUserRepository _userRepository;
+
+        public MembershipController(IMembershipRepository membershipRepository, IUserRepository userRepository)
         {
             _membershipRepository = membershipRepository;
+            _userRepository = userRepository;
         }
 
         [Authorize]
@@ -26,6 +29,7 @@ namespace ThumbsUpGroceries_backend.Controllers
             {
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+                var customerId = await _userRepository.GetStripeCustomerIdByUserId(userId);
 
                 var priceId = await _membershipRepository.GetStripePriceIdByPlanId(request.planId);
 
@@ -48,6 +52,10 @@ namespace ThumbsUpGroceries_backend.Controllers
                         { "planId", request.planId.ToString() }
                     },
                 };
+                if (!string.IsNullOrEmpty(customerId))
+                {
+                    options.Customer = customerId;
+                }
 
                 var service = new SessionService();
                 var session = await service.CreateAsync(options);

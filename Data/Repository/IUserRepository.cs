@@ -10,6 +10,8 @@ namespace ThumbsUpGroceries_backend.Data.Repository
 
         Task<User> GetUserInfoByUserId(Guid userId);
 
+        Task<string?> GetStripeCustomerIdByUserId(Guid userId);
+
         Task<User> UpdateUserInfo(Guid userId, UserInfoUpdateRequest request);
 
         Task<User> UpdateUserPassword(Guid userId, UserPasswordUpdateRequest request);

@@ -108,6 +108,28 @@ namespace ThumbsUpGroceries_backend.Data.Repository
             }
         }
 
+        public async Task<string?> GetStripeCustomerIdByUserId(Guid userId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var stripeCustomerId = await connection.QueryFirstOrDefaultAsync<string>(
+                        "SELECT StripeCustomerId FROM AppUser WHERE UserId = @UserId",
+                        new { UserId = userId }
+                    );
+
+                    return stripeCustomerId;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching Stripe customer ID");
+                }
+            }
+        }
+
         public async Task<User> UpdateUserInfo(Guid userId, UserInfoUpdateRequest request)
         {
             using (var connection = new SqlConnection(_connectionString))

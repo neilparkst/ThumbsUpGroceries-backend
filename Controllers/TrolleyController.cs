@@ -4,6 +4,7 @@ using ThumbsUpGroceries_backend.Data.Models;
 using ThumbsUpGroceries_backend.Data.Repository;
 using ThumbsUpGroceries_backend.Service;
 using Stripe.Checkout;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ThumbsUpGroceries_backend.Controllers
 {
@@ -12,10 +13,12 @@ namespace ThumbsUpGroceries_backend.Controllers
     public class TrolleyController : ControllerBase
     {
         private readonly ITrolleyRepository _trolleyRepository;
+        private readonly IUserRepository _userRepository;
 
-        public TrolleyController(ITrolleyRepository trolleyRepository)
+        public TrolleyController(ITrolleyRepository trolleyRepository, IUserRepository userRepository)
         {
             _trolleyRepository = trolleyRepository;
+            _userRepository = userRepository;
         }
 
         [Authorize]
@@ -198,6 +201,7 @@ namespace ThumbsUpGroceries_backend.Controllers
             {
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+                var customerId = await _userRepository.GetStripeCustomerIdByUserId(userId);
 
                 var trolley = await _trolleyRepository.GetTrolleyByTrolleyId(request.TrolleyId);
                 var trolleyItems = await _trolleyRepository.GetTrolleyItems(request.TrolleyId);
@@ -253,6 +257,10 @@ namespace ThumbsUpGroceries_backend.Controllers
                         { "chosenAddress", request.ChosenAddress }
                     },
                 };
+                if (!string.IsNullOrEmpty(customerId))
+                {
+                    options.Customer = customerId;
+                }
 
                 // add products to the session
                 foreach (var trolleyItem in trolleyItems)
