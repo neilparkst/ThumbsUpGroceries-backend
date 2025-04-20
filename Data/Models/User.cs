@@ -49,4 +49,10 @@ namespace ThumbsUpGroceries_backend.Data.Models
         [Required]
         public string NewPassword { get; set; }
     }
+
+    public class MembershipPortalSessionRequest
+    {
+        [Required]
+        public string ReturnUrl { get; set; }
+    }
 }

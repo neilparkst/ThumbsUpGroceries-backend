@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Stripe;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -183,6 +184,37 @@ namespace ThumbsUpGroceries_backend.Controllers
                 }
 
                 return Ok(new { UserId = user.UserId });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
+        [Authorize]
+        [HttpPost("me/membership/portal-session")]
+        public async Task<ActionResult> CreateMembershipPortalSession([FromBody] MembershipPortalSessionRequest request)
+        {
+            try
+            {
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+                var customerId = await _userRepository.GetStripeCustomerIdByUserId(userId);
+
+                if (string.IsNullOrEmpty(customerId))
+                {
+                    return NotFound("Customer not found");
+                }
+
+                var options = new Stripe.BillingPortal.SessionCreateOptions
+                {
+                    Customer = customerId,
+                    ReturnUrl = request.ReturnUrl,
+                };
+                var service = new Stripe.BillingPortal.SessionService(new StripeClient(_configuration["Stripe:SecretKey"]));
+                var session = await service.CreateAsync(options);
+
+                return Ok(new { url = session.Url });
             }
             catch (Exception e)
             {
