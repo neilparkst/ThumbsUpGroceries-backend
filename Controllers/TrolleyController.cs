@@ -192,7 +192,7 @@ namespace ThumbsUpGroceries_backend.Controllers
 
         [Authorize]
         [HttpPost("checkout-session")]
-        public async Task<IActionResult> CreateCheckoutSession([FromBody] CheckoutSessionRequest request)
+        public async Task<IActionResult> CreateCheckoutSession([FromBody] TrolleyCheckoutSessionRequest request)
         {
             try
             {

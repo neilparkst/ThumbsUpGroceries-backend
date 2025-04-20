@@ -110,7 +110,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public bool IsValid { get; set; }
     }
 
-    public class CheckoutSessionRequest
+    public class TrolleyCheckoutSessionRequest
     {
         [Required]
         public int TrolleyId { get; set; }
