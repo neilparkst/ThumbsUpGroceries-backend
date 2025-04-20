@@ -14,11 +14,13 @@ namespace ThumbsUpGroceries_backend.Controllers
     {
         private readonly ITrolleyRepository _trolleyRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IMembershipRepository _membershipRepository;
 
-        public TrolleyController(ITrolleyRepository trolleyRepository, IUserRepository userRepository)
+        public TrolleyController(ITrolleyRepository trolleyRepository, IUserRepository userRepository, IMembershipRepository membershipRepository)
         {
             _trolleyRepository = trolleyRepository;
             _userRepository = userRepository;
+            _membershipRepository = membershipRepository;
         }
 
         [Authorize]
@@ -57,9 +59,46 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var trolleyItems = await _trolleyRepository.GetTrolleyItems(trolley.TrolleyId);
 
                 var subTotalPrice = trolleyItems.Sum(item => item.TotalPrice);
-                // TODO: change ServiceFee, BagFee, TotalPrice based on the membership type
-                var serviceFee = 0;
-                var bagFee = 0;
+                // set ServiceFee, BagFee, TotalPrice based on the membership type
+                var membership = await _membershipRepository.GetCurrentUserMembership(userId);
+                float serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                float bagFee = TrolleyConstants.BAG_FEE;
+                if (string.IsNullOrEmpty(membership))
+                {
+                    serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                    bagFee = TrolleyConstants.BAG_FEE;
+                }
+                else if (membership == "Saver")
+                {
+                    if (subTotalPrice >= 80)
+                    {
+                        serviceFee = 0;
+                        bagFee = TrolleyConstants.BAG_FEE;
+                    }
+                    else
+                    {
+                        serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                        bagFee = TrolleyConstants.BAG_FEE;
+                    }
+                }
+                else if (membership == "Super Saver")
+                {
+                    if (subTotalPrice >= 80)
+                    {
+                        serviceFee = 0;
+                        bagFee = 0;
+                    }
+                    else if (subTotalPrice >= 60)
+                    {
+                        serviceFee = 0;
+                        bagFee = TrolleyConstants.BAG_FEE;
+                    }
+                    else
+                    {
+                        serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                        bagFee = TrolleyConstants.BAG_FEE;
+                    }
+                }
                 var totalPrice = subTotalPrice + serviceFee + bagFee;
 
                 var trolleyContentResponse = new TrolleyContentResponse
@@ -206,9 +245,47 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var trolley = await _trolleyRepository.GetTrolleyByTrolleyId(request.TrolleyId);
                 var trolleyItems = await _trolleyRepository.GetTrolleyItems(request.TrolleyId);
 
-                // TODO: change ServiceFee, BagFee based on the membership type
-                double serviceFee = 8.7;
-                double bagFee = 1.5;
+                // set ServiceFee, BagFee based on the membership type
+                var membership = await _membershipRepository.GetCurrentUserMembership(userId);
+                float serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                float bagFee = TrolleyConstants.BAG_FEE;
+                var subTotalPrice = trolleyItems.Sum(item => item.TotalPrice);
+                if (string.IsNullOrEmpty(membership))
+                {
+                    serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                    bagFee = TrolleyConstants.BAG_FEE;
+                }
+                else if (membership == "Saver")
+                {
+                    if (subTotalPrice >= 80)
+                    {
+                        serviceFee = 0;
+                        bagFee = TrolleyConstants.BAG_FEE;
+                    }
+                    else
+                    {
+                        serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                        bagFee = TrolleyConstants.BAG_FEE;
+                    }
+                }
+                else if (membership == "Super Saver")
+                {
+                    if (subTotalPrice >= 80)
+                    {
+                        serviceFee = 0;
+                        bagFee = 0;
+                    }
+                    else if (subTotalPrice >= 60)
+                    {
+                        serviceFee = 0;
+                        bagFee = TrolleyConstants.BAG_FEE;
+                    }
+                    else
+                    {
+                        serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                        bagFee = TrolleyConstants.BAG_FEE;
+                    }
+                }
 
                 // config stripe session options
                 var options = new SessionCreateOptions

@@ -8,10 +8,12 @@ namespace ThumbsUpGroceries_backend.Data.Repository
     public class TrolleyRepository : ITrolleyRepository
     {
         private readonly string _connectionString;
+        private readonly IMembershipRepository _membershipRepository;
 
-        public TrolleyRepository(IConfiguration configuration)
+        public TrolleyRepository(IConfiguration configuration, IMembershipRepository membershipRepository)
         {
             _connectionString = configuration["ConnectionStrings:DefaultConnection"];
+            _membershipRepository = membershipRepository;
         }
 
         public async Task<Trolley> GetTrolley(Guid userId)
@@ -388,9 +390,53 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                     {
                         return false;
                     }
-                    // TODO: get membership data to check serviceFee and bagFee
 
-                    if(request.TotalPrice != request.SubTotalPrice + request.ServiceFee + request.BagFee)
+                    // get membership data to check serviceFee and bagFee
+                    var membership = await _membershipRepository.GetCurrentUserMembership(userId);
+                    float serviceFee = (request.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                    float bagFee = TrolleyConstants.BAG_FEE;
+                    if (string.IsNullOrEmpty(membership))
+                    {
+                        serviceFee = (request.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                        bagFee = TrolleyConstants.BAG_FEE;
+                    }
+                    else if(membership == "Saver")
+                    {
+                        if(request.SubTotalPrice >= 80)
+                        {
+                            serviceFee = 0;
+                            bagFee = TrolleyConstants.BAG_FEE;
+                        }
+                        else
+                        {
+                            serviceFee = (request.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                            bagFee = TrolleyConstants.BAG_FEE;
+                        }
+                    }
+                    else if(membership == "Super Saver")
+                    {
+                        if(request.SubTotalPrice >= 80)
+                        {
+                            serviceFee = 0;
+                            bagFee = 0;
+                        }
+                        else if(request.SubTotalPrice >= 60)
+                        {
+                            serviceFee = 0;
+                            bagFee = TrolleyConstants.BAG_FEE;
+                        }
+                        else
+                        {
+                            serviceFee = (request.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                            bagFee = TrolleyConstants.BAG_FEE;
+                        }
+                    }
+                    if(request.ServiceFee != serviceFee || request.BagFee != bagFee)
+                    {
+                        return false;
+                    }
+
+                    if (request.TotalPrice != request.SubTotalPrice + request.ServiceFee + request.BagFee)
                     {
                         return false;
                     }

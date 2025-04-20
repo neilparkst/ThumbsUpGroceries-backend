@@ -2,6 +2,12 @@
 
 namespace ThumbsUpGroceries_backend.Data.Models
 {
+    public static class TrolleyConstants
+    {
+        public const float DELIVERY_FEE = 8.69F;
+        public const float BAG_FEE = 1.49F;
+    }
+
     public class Trolley
     {
         public int TrolleyId { get; set; }
