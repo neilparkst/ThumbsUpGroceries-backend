@@ -42,7 +42,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                     {
                         return BadRequest("Invalid session data");
                     }
-                    switch(session.Mode)
+                    switch (session.Mode)
                     {
                         case "payment":
                             {
@@ -258,7 +258,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                             return BadRequest("Invalid session mode");
                     }
                 }
-                else if(stripeEvent.Type == EventTypes.InvoicePaid)
+                else if (stripeEvent.Type == EventTypes.InvoicePaid)
                 {
                     var invoice = stripeEvent.Data.Object as Invoice;
                     if (invoice == null)
@@ -266,7 +266,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                         return BadRequest("Invalid invoice data");
                     }
 
-                    if(invoice.BillingReason == "subscription_create")
+                    if (invoice.BillingReason == "subscription_create")
                     {
                         return BadRequest("Not recurring payment");
                     }
@@ -294,8 +294,8 @@ namespace ThumbsUpGroceries_backend.Controllers
                             "UPDATE UserMembership " +
                             "SET RenewalDate = @RenewalDate, Status = @Status " +
                             "WHERE StripeSubscriptionId = @StripeSubscriptionId",
-                            new 
-                            { 
+                            new
+                            {
                                 RenewalDate = subscription.Items.Data[0].CurrentPeriodEnd,
                                 Status = "active",
                                 StripeSubscriptionId = subscriptionId
@@ -303,7 +303,63 @@ namespace ThumbsUpGroceries_backend.Controllers
                         );
                     }
                 }
-                else if(stripeEvent.Type == EventTypes.InvoicePaymentFailed)
+                else if (stripeEvent.Type == EventTypes.CustomerSubscriptionUpdated)
+                {
+                    var subscription = stripeEvent.Data.Object as Subscription;
+                    if (subscription == null)
+                    {
+                        return BadRequest("Invalid subscription data");
+                    }
+
+                    var subscriptionId = subscription.Id;
+                    var priceId = subscription.Items.Data[0].Price.Id;
+                    
+                    using( var connection = new SqlConnection(_connectionString))
+                    {
+                        await connection.OpenAsync();
+                        // get planId from priceId
+                        var planId = await connection.QueryFirstOrDefaultAsync<int>(
+                            "SELECT PlanId FROM MembershipPlan WHERE StripePriceId = @StripePriceId",
+                            new { StripePriceId = priceId }
+                        );
+
+                        // update membership
+                        await connection.ExecuteAsync(
+                            "UPDATE UserMembership " +
+                            "SET PlanId = @PlanId, StartDate = @StartDate, RenewalDate = @RenewalDate, Status = @Status " +
+                            "WHERE StripeSubscriptionId = @StripeSubscriptionId",
+                            new
+                            {
+                                PlanId = planId,
+                                StartDate = subscription.Items.Data[0].CurrentPeriodStart,
+                                RenewalDate = subscription.Items.Data[0].CurrentPeriodEnd,
+                                Status = "active",
+                                StripeSubscriptionId = subscriptionId
+                            }
+                        );
+                    }
+                }
+                else if (stripeEvent.Type == EventTypes.CustomerSubscriptionDeleted)
+                {
+                    var subscription = stripeEvent.Data.Object as Subscription;
+                    if (subscription == null)
+                    {
+                        return BadRequest("Invalid subscription data");
+                    }
+
+                    var subscriptionId = subscription.Id;
+
+                    using (var connection = new SqlConnection(_connectionString))
+                    {
+                        await connection.OpenAsync();
+                        // update membership
+                        await connection.ExecuteAsync(
+                            "UPDATE UserMembership SET Status = @Status WHERE StripeSubscriptionId = @StripeSubscriptionId",
+                            new { Status = "canceled", StripeSubscriptionId = subscriptionId }
+                        );
+                    }
+                }
+                else if (stripeEvent.Type == EventTypes.InvoicePaymentFailed)
                 {
                     var invoice = stripeEvent.Data.Object as Invoice;
                     if (invoice == null)
