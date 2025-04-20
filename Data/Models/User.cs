@@ -13,6 +13,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public string LastName { get; set; }
         public string Address { get; set; }
         public string Role { get; set; }
+        public string StripeCustomerId { get; set; }
     }
 
     public class UserInfoResponse

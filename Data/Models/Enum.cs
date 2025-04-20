@@ -20,4 +20,11 @@
         canceling,
         canceled
     }
+
+    public enum MembershipStatus
+    {
+        active,
+        pastDue,
+        canceled,
+    }
 }

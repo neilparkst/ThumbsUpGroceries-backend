@@ -54,6 +54,7 @@ namespace ThumbsUpGroceries_backend
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<ITrolleyRepository, TrolleyRepository>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+            builder.Services.AddScoped<IMembershipRepository, MembershipRepository>();
             builder.Services.AddMemoryCache();
 
             var app = builder.Build();
