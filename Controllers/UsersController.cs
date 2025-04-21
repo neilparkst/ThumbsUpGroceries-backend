@@ -15,13 +15,15 @@ namespace ThumbsUpGroceries_backend.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
+        private readonly IUserRepository _userRepository;
+        private readonly IMembershipRepository _membershipRepository;
 
-        public UsersController(IUserRepository userRepository, IConfiguration configuration)
+        public UsersController(IUserRepository userRepository, IConfiguration configuration, IMembershipRepository membershipRepository)
         {
             _userRepository = userRepository;
             _configuration = configuration;
+            _membershipRepository = membershipRepository;
         }
 
         [Authorize]
@@ -184,6 +186,25 @@ namespace ThumbsUpGroceries_backend.Controllers
                 }
 
                 return Ok(new { UserId = user.UserId });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
+        [Authorize]
+        [HttpGet("me/membership")]
+        public async Task<ActionResult> GetMyMembership()
+        {
+            try
+            {
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                var myMembership = await _membershipRepository.GetCurrentUserMembershipContent(userId);
+
+                return Ok(myMembership ?? new Object { });
             }
             catch (Exception e)
             {

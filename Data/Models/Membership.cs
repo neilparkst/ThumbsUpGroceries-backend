@@ -31,6 +31,17 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public string Status { get; set; }
     }
 
+    public class UserMembershipContent
+    {
+        public int MembershipId { get; set; }
+        public int PlanId { get; set; }
+        public string PlanName { get; set; }
+        public double PlanPrice { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime RenewalDate { get; set; }
+        public string Status { get; set; }
+    }
+
     public class MembershipCheckoutSessionRequest
     {
         [Required]

@@ -8,6 +8,8 @@ namespace ThumbsUpGroceries_backend.Data.Repository
 
         public Task<string?> GetCurrentUserMembershipName(Guid userId);
 
+        public Task<UserMembershipContent?> GetCurrentUserMembershipContent(Guid userId);
+
         public Task<List<MembershipMany>> GetMembershipOptions();
     }
 }

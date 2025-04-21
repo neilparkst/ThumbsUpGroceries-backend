@@ -70,6 +70,28 @@ namespace ThumbsUpGroceries_backend.Data.Repository
             }
         }
 
+        public async Task<UserMembershipContent?> GetCurrentUserMembershipContent(Guid userId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    var membership = await connection.QueryFirstOrDefaultAsync<UserMembershipContent>(
+                        "SELECT um.MembershipId, m.PlanId, m.Name AS PlanName, m.Price AS PlanPrice, um.StartDate, um.RenewalDate, um.Status " +
+                        "FROM UserMembership um JOIN MembershipPlan m ON um.PlanId = m.PlanId " +
+                        "WHERE um.UserId = @UserId AND um.Status = @Status",
+                        new { UserId = userId, Status = MembershipStatus.active.ToString() }
+                    );
+
+                    return membership;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching the current user membership content");
+                }
+            }
+        }
+
         public async Task<List<MembershipMany>> GetMembershipOptions()
         {
             using (var connection = new SqlConnection(_connectionString))
