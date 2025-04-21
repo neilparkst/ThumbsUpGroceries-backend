@@ -21,6 +21,20 @@ namespace ThumbsUpGroceries_backend.Controllers
             _userRepository = userRepository;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetMembershipOptions()
+        {
+            try
+            {
+                var membershipOptions = await _membershipRepository.GetMembershipOptions();
+                return Ok(membershipOptions);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
         [Authorize]
         [HttpPost("checkout-session")]
         public async Task<IActionResult> CreateCheckoutSession([FromBody] MembershipCheckoutSessionRequest request)

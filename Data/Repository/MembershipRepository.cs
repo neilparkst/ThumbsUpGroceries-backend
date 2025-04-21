@@ -69,5 +69,24 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                 }
             }
         }
+
+        public async Task<List<MembershipMany>> GetMembershipOptions()
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    var memberships = await connection.QueryAsync<MembershipMany>(
+                        "SELECT PlanId, Name, Price, DurationMonths, Description FROM MembershipPlan"
+                    );
+
+                    return memberships.ToList();
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching the membership options");
+                }
+            }
+        }
     }
 }
