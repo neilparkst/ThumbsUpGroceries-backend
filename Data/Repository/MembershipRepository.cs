@@ -42,7 +42,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
             }
         }
 
-        public async Task<string?> GetCurrentUserMembership(Guid userId)
+        public async Task<string?> GetCurrentUserMembershipName(Guid userId)
         {
             using (var connection = new SqlConnection(_connectionString))
             {

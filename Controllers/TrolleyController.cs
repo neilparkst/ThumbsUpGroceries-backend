@@ -60,7 +60,7 @@ namespace ThumbsUpGroceries_backend.Controllers
 
                 var subTotalPrice = trolleyItems.Sum(item => item.TotalPrice);
                 // set ServiceFee, BagFee, TotalPrice based on the membership type
-                var membership = await _membershipRepository.GetCurrentUserMembership(userId);
+                var membership = await _membershipRepository.GetCurrentUserMembershipName(userId);
                 float serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
                 float bagFee = TrolleyConstants.BAG_FEE;
                 if (string.IsNullOrEmpty(membership))
@@ -246,7 +246,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var trolleyItems = await _trolleyRepository.GetTrolleyItems(request.TrolleyId);
 
                 // set ServiceFee, BagFee based on the membership type
-                var membership = await _membershipRepository.GetCurrentUserMembership(userId);
+                var membership = await _membershipRepository.GetCurrentUserMembershipName(userId);
                 float serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
                 float bagFee = TrolleyConstants.BAG_FEE;
                 var subTotalPrice = trolleyItems.Sum(item => item.TotalPrice);

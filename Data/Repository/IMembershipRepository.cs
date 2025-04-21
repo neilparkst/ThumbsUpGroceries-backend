@@ -4,6 +4,6 @@
     {
         public Task<string> GetStripePriceIdByPlanId(int planId);
 
-        public Task<string?> GetCurrentUserMembership(Guid userId);
+        public Task<string?> GetCurrentUserMembershipName(Guid userId);
     }
 }

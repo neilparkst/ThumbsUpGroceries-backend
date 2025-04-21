@@ -392,7 +392,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                     }
 
                     // get membership data to check serviceFee and bagFee
-                    var membership = await _membershipRepository.GetCurrentUserMembership(userId);
+                    var membership = await _membershipRepository.GetCurrentUserMembershipName(userId);
                     float serviceFee = (request.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
                     float bagFee = TrolleyConstants.BAG_FEE;
                     if (string.IsNullOrEmpty(membership))
