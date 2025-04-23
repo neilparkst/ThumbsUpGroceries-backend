@@ -116,6 +116,14 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public bool IsValid { get; set; }
     }
 
+    public class TrolleyTimeSlot
+    {
+        public int TimeSlotId { get; set; }
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public TrolleyTimeSlotStatus Status { get; set; } = TrolleyTimeSlotStatus.available;
+    }
+
     public class TrolleyCheckoutSessionRequest
     {
         [Required]

@@ -12,6 +12,12 @@
         pickup
     }
 
+    public enum TrolleyTimeSlotStatus
+    {
+        available,
+        unavailable
+    }
+
     public enum OrderStatus
     {
         registered,

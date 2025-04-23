@@ -206,6 +206,76 @@ namespace ThumbsUpGroceries_backend.Controllers
             }
         }
 
+        //[Authorize]
+        [HttpGet("time-slot/{serviceMethod}")]
+        public async Task<IActionResult> GetTimeSlot(TrolleyMethod serviceMethod)
+        {
+            try
+            {
+                //var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                //var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                // TODO: create database table for time slots
+                List<TrolleyTimeSlot> timeSlots = new List<TrolleyTimeSlot>();
+                if (serviceMethod == TrolleyMethod.pickup) {
+                    DateTime now = DateTime.Now;
+                    DateTime today = now.Date;
+
+                    for (int i = 0; i < 7; i++)
+                    {
+                        DateTime currentDate = today.AddDays(i);
+                        for (int hour = 7; hour <= 20; hour++)
+                        {
+                            for(int minute = 0; minute < 60; minute += 30)
+                            {
+                                DateTime currentStartTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, hour, minute, 0);
+                                if (currentStartTime > now)
+                                {
+                                    timeSlots.Add(new TrolleyTimeSlot
+                                    {
+                                        TimeSlotId = 10000 + i * 14 + hour,
+                                        Start = currentStartTime,
+                                        End = currentStartTime.AddMinutes(30),
+                                        Status = TrolleyTimeSlotStatus.available
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (serviceMethod == TrolleyMethod.delivery)
+                {
+                    DateTime now = DateTime.Now;
+                    DateTime today = now.Date;
+
+                    for (int i = 0; i < 7; i++)
+                    {
+                        DateTime currentDate = today.AddDays(i);
+                        for (int hour = 8; hour <= 17; hour++)
+                        {
+                            DateTime currentStartTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, hour, 30, 0);
+                            if (currentStartTime > now)
+                            {
+                                timeSlots.Add(new TrolleyTimeSlot
+                                {
+                                    TimeSlotId = 20000 + i * 14 + hour,
+                                    Start = currentStartTime,
+                                    End = currentStartTime.AddMinutes(150),
+                                    Status = TrolleyTimeSlotStatus.available
+                                });
+                            }
+                        }
+                    }
+                }
+
+                return Ok(timeSlots);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
         [Authorize]
         [HttpPost("validation")]
         public async Task<IActionResult> ValidateTrolley([FromBody] TrolleyValidationRequest request)
