@@ -12,6 +12,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         [Required(ErrorMessage = "password is required")]
         public string Password { get; set; }
 
+        [Required(ErrorMessage = "username is required")]
         [StringLength(100)]
         public string UserName { get; set; }
 
