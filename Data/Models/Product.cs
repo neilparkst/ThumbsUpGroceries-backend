@@ -53,7 +53,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public string? Description { get; set; }
         public List<IFormFile>? Images { get; set; }
         [Required]
-        public float? Quantity { get; set; }
+        public float Quantity { get; set; }
         [Required]
         public List<int> Categories { get; set; }
     }
