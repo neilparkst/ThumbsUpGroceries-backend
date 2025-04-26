@@ -87,7 +87,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                     PaymentIntent = order.TransactionId,
                 });
 
-                return Ok(new CancelOrderReponse
+                return Ok(new CancelOrderResponse
                 {
                     OrderId = order.OrderId,
                     OrderStatus = order.OrderStatus,

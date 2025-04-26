@@ -54,7 +54,7 @@
         public DateTime OrderDate { get; set; }
     }
 
-    public class CancelOrderReponse
+    public class CancelOrderResponse
     {
         public int OrderId { get; set; }
         public OrderStatus OrderStatus { get; set; }
