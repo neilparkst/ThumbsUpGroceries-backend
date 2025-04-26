@@ -21,6 +21,15 @@ namespace ThumbsUpGroceries_backend
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            // Add CORS services
+            builder.Services.AddCors(options =>
+                options.AddPolicy("CorsPolicy", policy =>
+                    policy.AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .WithOrigins(builder.Configuration["Frontend"])
+                )
+            );
+
             // Configure JWT authentication
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -67,6 +76,8 @@ namespace ThumbsUpGroceries_backend
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors("CorsPolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();
