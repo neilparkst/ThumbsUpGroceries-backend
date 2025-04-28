@@ -1,5 +1,6 @@
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.IdentityModel.Tokens;
 using Stripe;
 using System.Text;
@@ -85,7 +86,16 @@ namespace ThumbsUpGroceries_backend
 
             app.MapControllers();
 
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                ContentTypeProvider = new FileExtensionContentTypeProvider
+                {
+                    Mappings =
+                    {
+                        [".avif"] = "image/avif"
+                    }
+                }
+            });
 
             app.Run();
         }
