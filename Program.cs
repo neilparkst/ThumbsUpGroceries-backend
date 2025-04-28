@@ -85,6 +85,8 @@ namespace ThumbsUpGroceries_backend
 
             app.MapControllers();
 
+            app.UseStaticFiles();
+
             app.Run();
         }
     }
