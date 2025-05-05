@@ -59,12 +59,7 @@ namespace ThumbsUpGroceries_backend.Controllers
 
                 var claims = new List<Claim>{
                         new Claim("userId", user.UserId.ToString()),
-                        new Claim("email", user.Email),
                         new Claim("userName", user.UserName ?? ""),
-                        new Claim("phoneNumber", user.PhoneNumber ?? ""),
-                        new Claim("firstName", user.FirstName ?? ""),
-                        new Claim("lastName", user.LastName ?? ""),
-                        new Claim("address", user.Address ?? ""),
                         new Claim("role", user.Role)
                     };
 
