@@ -502,7 +502,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
 
                     var reviews = await connection.QueryAsync<ReviewManyResponse>(
                         @"SELECT
-                            r.*, u.UserName 
+                            r.*, u.UserId, u.UserName 
                         FROM
                             Review r
                         INNER JOIN 

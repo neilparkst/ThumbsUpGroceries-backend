@@ -14,6 +14,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
     public class ReviewManyResponse
     {
         public int ReviewId { get; set; }
+        public Guid UserId { get; set; }
         public string UserName { get; set; }
         public string Comment { get; set; }
         public float Rating { get; set; }
