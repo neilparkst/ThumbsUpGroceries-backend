@@ -279,16 +279,6 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                         throw new InvalidDataException("User is not authorized to delete this trolley item");
                     }
 
-                    // check if trolley item exists
-                    var isTrolleyItemExists = await connection.ExecuteScalarAsync<bool>(
-                        "SELECT 1 WHERE EXISTS(SELECT 1 FROM TrolleyItem WHERE TrolleyItemId = @TrolleyItemId)",
-                        new { TrolleyItemId = trolleyItemId }
-                    );
-                    if (!isTrolleyItemExists)
-                    {
-                        throw new InvalidDataException("Trolley item does not exist");
-                    }
-
                     using (var transaction = await connection.BeginTransactionAsync())
                     {
                         try
@@ -340,6 +330,11 @@ namespace ThumbsUpGroceries_backend.Data.Repository
             {
                 try
                 {
+                    if(trolleyItemIds.Count == 0)
+                    {
+                        throw new InvalidDataException("Trolley item IDs cannot be empty");
+                    }
+
                     await connection.OpenAsync();
 
                     // check if the user is authorised for all items
