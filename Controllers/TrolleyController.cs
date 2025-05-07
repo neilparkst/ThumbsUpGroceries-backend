@@ -206,6 +206,33 @@ namespace ThumbsUpGroceries_backend.Controllers
             }
         }
 
+        [Authorize]
+        [HttpPost("bulk-deletion")]
+        public async Task<IActionResult> RemoveTrolleyItems([FromBody] List<int> trolleyItemIds)
+        {
+            try
+            {
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                var trolleyItems = await _trolleyRepository.RemoveTrolleyItems(userId, trolleyItemIds);
+                var trolleyItemDeleteResponse = trolleyItems.Select(item => new TrolleyItemDeleteResponse
+                {
+                    TrolleyItemId = item.TrolleyItemId,
+                    ProductId = item.ProductId
+                }).ToList();
+                return Ok(trolleyItemDeleteResponse);
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
         //[Authorize]
         [HttpGet("time-slot/{serviceMethod}")]
         public async Task<IActionResult> GetTimeSlot(TrolleyMethod serviceMethod)
