@@ -398,6 +398,46 @@ namespace ThumbsUpGroceries_backend.Data.Repository
             }
         }
 
+        public async Task<Trolley> UpdateTrolleyMethod(Guid userId, int trolleyId, TrolleyMethod method)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    // check if the user is authorised
+                    var isUserAuthorized = await connection.ExecuteScalarAsync<bool>(
+                        "SELECT 1 WHERE EXISTS(SELECT 1 FROM Trolley WHERE TrolleyId = @TrolleyId AND UserId = @UserId)",
+                        new { UserId = userId, TrolleyId = trolleyId }
+                    );
+                    if (!isUserAuthorized)
+                    {
+                        throw new InvalidDataException("User is not authorized to update this trolley");
+                    }
+
+                    // Update Trolley Method
+                    var trolleyResponse = await connection.QueryFirstAsync<Trolley>(
+                        "UPDATE Trolley " +
+                        "SET Method = @Method " +
+                        "OUTPUT INSERTED.* " +
+                        "WHERE TrolleyId = @TrolleyId",
+                        new { TrolleyId = trolleyId, Method = method.ToString() }
+                    );
+
+                    return trolleyResponse;
+                }
+                catch (Exception e)
+                {
+                    if (e.GetType() == typeof(InvalidDataException))
+                    {
+                        throw e;
+                    }
+                    throw new Exception("An error occurred while updating trolley method");
+                }
+            }
+        }
+
         public async Task<bool> ValidateTrolley(Guid userId, TrolleyValidationRequest request)
         {
             using (var connection = new SqlConnection(_connectionString))

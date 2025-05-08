@@ -18,6 +18,8 @@ namespace ThumbsUpGroceries_backend.Data.Repository
 
         Task<List<TrolleyItem>> RemoveTrolleyItems(Guid userId, List<int> trolleyItemIds);
 
+        Task<Trolley> UpdateTrolleyMethod(Guid userId, int trolleyId, TrolleyMethod method);
+
         Task<bool> ValidateTrolley(Guid userId, TrolleyValidationRequest request);
     }
 }

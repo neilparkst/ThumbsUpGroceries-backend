@@ -233,6 +233,33 @@ namespace ThumbsUpGroceries_backend.Controllers
             }
         }
 
+        [Authorize]
+        [HttpPost("method/{trolleyId}")]
+        public async Task<IActionResult> UpdateTrolleyMethod(int trolleyId, [FromBody] TrolleyMethod trolleyMethod)
+        {
+            try
+            {
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                var trolley = await _trolleyRepository.UpdateTrolleyMethod(userId, trolleyId, trolleyMethod);
+                var trolleyMethodResponse = new
+                {
+                    TrolleyId = trolley.TrolleyId,
+                    Method = trolley.Method
+                };
+                return Ok(trolleyMethodResponse);
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
         //[Authorize]
         [HttpGet("time-slot/{serviceMethod}")]
         public async Task<IActionResult> GetTimeSlot(TrolleyMethod serviceMethod)
@@ -260,7 +287,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                                 {
                                     timeSlots.Add(new TrolleyTimeSlot
                                     {
-                                        TimeSlotId = 10000 + i * 14 + hour,
+                                        TimeSlotId = 10000 + i * 14 + hour + minute,
                                         Start = currentStartTime,
                                         End = currentStartTime.AddMinutes(30),
                                         Status = TrolleyTimeSlotStatus.available
