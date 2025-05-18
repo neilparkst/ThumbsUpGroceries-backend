@@ -80,12 +80,6 @@ namespace ThumbsUpGroceries_backend
 
             app.UseCors("CorsPolicy");
 
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-
-            app.MapControllers();
-
             app.UseStaticFiles(new StaticFileOptions
             {
                 ContentTypeProvider = new FileExtensionContentTypeProvider
@@ -94,8 +88,18 @@ namespace ThumbsUpGroceries_backend
                     {
                         [".avif"] = "image/avif"
                     }
+                },
+                OnPrepareResponse = ctx =>
+                {
+                    ctx.Context.Response.Headers["Access-Control-Allow-Origin"] = builder.Configuration["Frontend"];
                 }
             });
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+
+            app.MapControllers();
 
             app.Run();
         }
