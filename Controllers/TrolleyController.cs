@@ -70,7 +70,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 }
                 else if (membership == "Saver")
                 {
-                    if (subTotalPrice >= 80)
+                    if (subTotalPrice >= 8000)
                     {
                         serviceFee = 0;
                         bagFee = TrolleyConstants.BAG_FEE;
@@ -83,12 +83,12 @@ namespace ThumbsUpGroceries_backend.Controllers
                 }
                 else if (membership == "Super Saver")
                 {
-                    if (subTotalPrice >= 80)
+                    if (subTotalPrice >= 8000)
                     {
                         serviceFee = 0;
                         bagFee = 0;
                     }
-                    else if (subTotalPrice >= 60)
+                    else if (subTotalPrice >= 6000)
                     {
                         serviceFee = 0;
                         bagFee = TrolleyConstants.BAG_FEE;
@@ -381,7 +381,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 }
                 else if (membership == "Saver")
                 {
-                    if (subTotalPrice >= 80)
+                    if (subTotalPrice >= 8000)
                     {
                         serviceFee = 0;
                         bagFee = TrolleyConstants.BAG_FEE;
@@ -394,12 +394,12 @@ namespace ThumbsUpGroceries_backend.Controllers
                 }
                 else if (membership == "Super Saver")
                 {
-                    if (subTotalPrice >= 80)
+                    if (subTotalPrice >= 8000)
                     {
                         serviceFee = 0;
                         bagFee = 0;
                     }
-                    else if (subTotalPrice >= 60)
+                    else if (subTotalPrice >= 6000)
                     {
                         serviceFee = 0;
                         bagFee = TrolleyConstants.BAG_FEE;

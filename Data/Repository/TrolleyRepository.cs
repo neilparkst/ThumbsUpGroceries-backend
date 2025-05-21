@@ -506,7 +506,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                     }
                     else if(membership == "Saver")
                     {
-                        if(request.SubTotalPrice >= 80)
+                        if(request.SubTotalPrice >= 8000)
                         {
                             serviceFee = 0;
                             bagFee = TrolleyConstants.BAG_FEE;
@@ -519,12 +519,12 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                     }
                     else if(membership == "Super Saver")
                     {
-                        if(request.SubTotalPrice >= 80)
+                        if(request.SubTotalPrice >= 8000)
                         {
                             serviceFee = 0;
                             bagFee = 0;
                         }
-                        else if(request.SubTotalPrice >= 60)
+                        else if(request.SubTotalPrice >= 6000)
                         {
                             serviceFee = 0;
                             bagFee = TrolleyConstants.BAG_FEE;
