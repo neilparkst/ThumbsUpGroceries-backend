@@ -84,6 +84,9 @@ namespace ThumbsUpGroceries_backend.Data.Repository
         {
             using (var connection = new SqlConnection(_connectionString))
             {
+                // save images to folder
+                List<string> imagePaths = new();
+
                 try
                 {
                     // create folder for images
@@ -93,8 +96,6 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                         Directory.CreateDirectory(uploadFolder);
                     }
 
-                    // save images to folder
-                    List<string> imagePaths = new();
 
                     if (request.Images != null && request.Images.Count > 0)
                     {
@@ -117,37 +118,64 @@ namespace ThumbsUpGroceries_backend.Data.Repository
 
                     await connection.OpenAsync();
 
-                    var productId = await connection.QueryFirstOrDefaultAsync<int>(
-                        "INSERT INTO Product (Name, Price, PriceUnitType, Description, Images, Quantity) " +
-                        "OUTPUT INSERTED.ProductId " +
-                        "VALUES (@Name, @Price, @PriceUnitType, @Description, @Images, @Quantity)",
-                        new
-                        {
-                            Name = request.Name,
-                            Price = request.Price,
-                            PriceUnitType = request.PriceUnitType.ToString(),
-                            Description = request.Description ?? (object)DBNull.Value,
-                            Images = imagePaths.Count > 0 ? string.Join(",", imagePaths) : (object)DBNull.Value,
-                            Quantity = request.Quantity
-                        }
-                    );
-
-                    // add categories
-                    if (request.Categories != null && request.Categories.Count > 0)
+                    using (var transaction = await connection.BeginTransactionAsync())
                     {
-                        foreach (var categoryId in request.Categories)
+                        try
                         {
-                            await connection.ExecuteAsync(
-                                "INSERT INTO ProductCategoryXRef (ProductId, CategoryId) VALUES (@ProductId, @CategoryId)",
-                                new { ProductId = productId, CategoryId = categoryId }
+                            var productId = await connection.QueryFirstOrDefaultAsync<int>(
+                                "INSERT INTO Product (Name, Price, PriceUnitType, Description, Images, Quantity) " +
+                                "OUTPUT INSERTED.ProductId " +
+                                "VALUES (@Name, @Price, @PriceUnitType, @Description, @Images, @Quantity)",
+                                new
+                                {
+                                    Name = request.Name,
+                                    Price = request.Price,
+                                    PriceUnitType = request.PriceUnitType.ToString(),
+                                    Description = request.Description ?? (object)DBNull.Value,
+                                    Images = imagePaths.Count > 0 ? string.Join(",", imagePaths) : (object)DBNull.Value,
+                                    Quantity = request.Quantity
+                                },
+                                transaction: transaction
                             );
+
+                            // add categories
+                            if (request.Categories != null && request.Categories.Count > 0)
+                            {
+                                foreach (var categoryId in request.Categories)
+                                {
+                                    await connection.ExecuteAsync(
+                                        "INSERT INTO ProductCategoryXRef (ProductId, CategoryId) VALUES (@ProductId, @CategoryId)",
+                                        new { ProductId = productId, CategoryId = categoryId },
+                                        transaction: transaction
+                                    );
+                                }
+                            }
+
+                            await transaction.CommitAsync();
+                            return productId;
+                        }
+                        catch (Exception e)
+                        {
+                            // rollback the transaction if any error occurs
+                            await transaction.RollbackAsync();
+
+                            throw e;
                         }
                     }
 
-                    return productId;
                 }
                 catch (Exception e)
                 {
+                    // delete uploaded images
+                    foreach (var imagePath in imagePaths)
+                    {
+                        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", imagePath.TrimStart('/'));
+                        if (File.Exists(fullPath))
+                        {
+                            File.Delete(fullPath);
+                        }
+                    }
+
                     throw new Exception("An error occurred while adding product");
                 }
             }
@@ -155,134 +183,161 @@ namespace ThumbsUpGroceries_backend.Data.Repository
 
         public async Task<int> UpdateProduct(int productId, ProductUpdateRequest request)
         {
+            var uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
+            if (!Directory.Exists(uploadFolder))
+            {
+                Directory.CreateDirectory(uploadFolder);
+            }
+
+            List<string> currentImages = new();
+            List<string> newImagePaths = new(); // image paths from the request to be stored in DB
+            List<string> savedFilePaths = new(); // full paths of newly saved images
+
             using (var connection = new SqlConnection(_connectionString))
             {
-                try
+                await connection.OpenAsync();
+
+                using (var transaction = await connection.BeginTransactionAsync())
                 {
-                    await connection.OpenAsync();
-
-                    // check if product exists
-                    var isProductExists = await connection.ExecuteScalarAsync<bool>(
-                        "SELECT 1 WHERE EXISTS(SELECT 1 FROM Product WHERE ProductId = @ProductId)",
-                        new { ProductId = productId }
-                    );
-                    if (!isProductExists)
+                    try
                     {
-                        return -1;
-                    }
-
-                    // get existing images
-                    var existingImages = await connection.QueryFirstOrDefaultAsync<string>(
-                        "SELECT Images FROM Product WHERE ProductId = @ProductId",
-                        new { ProductId = productId }
-                     );
-
-                    List<string> currentImages = existingImages?.Split(',').ToList() ?? new();
-
-                    // create folder for images
-                    var uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
-                    if (!Directory.Exists(uploadFolder))
-                    {
-                        Directory.CreateDirectory(uploadFolder);
-                    }
-
-                    // save images to folder
-                    List<string> newImagePaths = new();
-
-                    if (request.Images != null && request.Images.Count > 0)
-                    {
-                        foreach (var file in request.Images)
+                        // check if product exists
+                        var isProductExists = await connection.ExecuteScalarAsync<bool>(
+                            "SELECT 1 WHERE EXISTS(SELECT 1 FROM Product WHERE ProductId = @ProductId)",
+                            new { ProductId = productId },
+                            transaction
+                        );
+                        if (!isProductExists)
                         {
-                            // if image already exists, add it to newImagePaths and do nothing
-                            if (currentImages.Contains(file.FileName))
-                            {
-                                newImagePaths.Add(file.FileName);
-                                continue;
-                            }
+                            return -1;
+                        }
 
-                            if (file.Length > 0)
-                            {
-                                var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-                                var filePath = Path.Combine(uploadFolder, fileName);
+                        // get existing images
+                        var existingImages = await connection.QueryFirstOrDefaultAsync<string>(
+                            "SELECT Images FROM Product WHERE ProductId = @ProductId",
+                            new { ProductId = productId },
+                            transaction
+                        );
+                        currentImages = existingImages?.Split(',').ToList() ?? new();
 
-                                using (var stream = new FileStream(filePath, FileMode.Create))
+                        // save new images
+                        if (request.Images != null && request.Images.Count > 0)
+                        {
+                            foreach (var file in request.Images)
+                            {
+                                // already stored image path sent by client
+                                if (currentImages.Contains(file.FileName))
                                 {
-                                    await file.CopyToAsync(stream);
+                                    newImagePaths.Add(file.FileName);
+                                    continue;
                                 }
 
-                                newImagePaths.Add($"/images/products/{fileName}");
+                                if (file.Length > 0)
+                                {
+                                    var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                                    var relativePath = $"/images/products/{fileName}";
+                                    var fullPath = Path.Combine(uploadFolder, fileName);
+
+                                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                                    {
+                                        await file.CopyToAsync(stream);
+                                    }
+
+                                    newImagePaths.Add(relativePath);
+                                    savedFilePaths.Add(fullPath);
+                                }
                             }
                         }
-                    }
 
-                    // delete images that are not in the request
-                    var imagesToDelete = currentImages.Except(newImagePaths).ToList();
-                    foreach (var imagePath in imagesToDelete)
-                    {
-                        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", imagePath.TrimStart('/'));
-                        if (System.IO.File.Exists(fullPath))
-                        {
-                            System.IO.File.Delete(fullPath);
-                        }
-                    }
-
-                    if (request.AddedQuantity != null)
-                    {
-                        await connection.ExecuteAsync(
-                            "UPDATE Product SET Quantity = Quantity + @AddedQuantity WHERE ProductId = @ProductId",
-                            new { AddedQuantity = request.AddedQuantity, ProductId = productId }
-                        );
-                    }
-
-                    if (request.Name != null || request.Price != null || request.PriceUnitType != null || request.Description != null || newImagePaths.Count > 0 || request.Quantity != null)
-                    {
-                        await connection.ExecuteAsync(
-                            "UPDATE Product SET " +
-                            "Name = ISNULL(@Name, Name), " +
-                            "Price = ISNULL(@Price, Price), " +
-                            "PriceUnitType = ISNULL(@PriceUnitType, PriceUnitType), " +
-                            "Description = ISNULL(@Description, Description), " +
-                            "Images = @Images, " +
-                            "Quantity = ISNULL(@Quantity, Quantity) " +
-                            "WHERE ProductId = @ProductId",
-                            new
-                            {
-                                Name = request.Name,
-                                Price = request.Price,
-                                PriceUnitType = request.PriceUnitType.ToString(),
-                                Description = request.Description,
-                                Images = newImagePaths.Count > 0 ? string.Join(",", newImagePaths) : (object)DBNull.Value,
-                                Quantity = request.Quantity,
-                                ProductId = productId
-                            }
-                        );
-                    }
-
-                    // update categories
-                    await connection.ExecuteAsync(
-                        "DELETE FROM ProductCategoryXRef WHERE ProductId = @ProductId",
-                        new { ProductId = productId }
-                    );
-
-                    if (request.Categories != null && request.Categories.Count > 0)
-                    {
-                        foreach (var categoryId in request.Categories)
+                        // update Product fields
+                        if (request.AddedQuantity != null)
                         {
                             await connection.ExecuteAsync(
-                                "INSERT INTO ProductCategoryXRef (ProductId, CategoryId) VALUES (@ProductId, @CategoryId)",
-                                new { ProductId = productId, CategoryId = categoryId }
+                                "UPDATE Product SET Quantity = Quantity + @AddedQuantity WHERE ProductId = @ProductId",
+                                new { AddedQuantity = request.AddedQuantity, ProductId = productId },
+                                transaction
                             );
                         }
-                    }
 
-                    return productId;
-                }
-                catch (Exception e)
-                {
-                    throw new Exception("An error occurred while updating product");
+                        if (request.Name != null || request.Price != null || request.PriceUnitType != null ||
+                            request.Description != null || newImagePaths.Count > 0 || request.Quantity != null)
+                        {
+                            await connection.ExecuteAsync(
+                                "UPDATE Product SET " +
+                                "Name = ISNULL(@Name, Name), " +
+                                "Price = ISNULL(@Price, Price), " +
+                                "PriceUnitType = ISNULL(@PriceUnitType, PriceUnitType), " +
+                                "Description = ISNULL(@Description, Description), " +
+                                "Images = @Images, " +
+                                "Quantity = ISNULL(@Quantity, Quantity) " +
+                                "WHERE ProductId = @ProductId",
+                                new
+                                {
+                                    Name = request.Name,
+                                    Price = request.Price,
+                                    PriceUnitType = request.PriceUnitType?.ToString(),
+                                    Description = request.Description,
+                                    Images = newImagePaths.Count > 0 ? string.Join(",", newImagePaths) : (object)DBNull.Value,
+                                    Quantity = request.Quantity,
+                                    ProductId = productId
+                                },
+                                transaction
+                            );
+                        }
+
+                        // update Categories
+                        await connection.ExecuteAsync(
+                            "DELETE FROM ProductCategoryXRef WHERE ProductId = @ProductId",
+                            new { ProductId = productId },
+                            transaction
+                        );
+
+                        if (request.Categories != null && request.Categories.Count > 0)
+                        {
+                            foreach (var categoryId in request.Categories)
+                            {
+                                await connection.ExecuteAsync(
+                                    "INSERT INTO ProductCategoryXRef (ProductId, CategoryId) VALUES (@ProductId, @CategoryId)",
+                                    new { ProductId = productId, CategoryId = categoryId },
+                                    transaction
+                                );
+                            }
+                        }
+
+                        // commit DB
+                        await transaction.CommitAsync();
+
+                        // after DB commit: delete images that are no longer referenced
+                        var imagesToDelete = currentImages.Except(newImagePaths).ToList();
+                        foreach (var imagePath in imagesToDelete)
+                        {
+                            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", imagePath.TrimStart('/'));
+                            if (File.Exists(fullPath))
+                            {
+                                File.Delete(fullPath);
+                            }
+                        }
+
+                        return productId;
+                    }
+                    catch
+                    {
+                        // If saving images or DB ops failed, delete newly saved files
+                        foreach (var filePath in savedFilePaths)
+                        {
+                            if (File.Exists(filePath))
+                            {
+                                File.Delete(filePath);
+                            }
+                        }
+
+                        await transaction.RollbackAsync();
+                        throw new Exception("An error occurred while updating product"); ;
+                    }
                 }
             }
         }
+
 
         public async Task<int> RemoveProduct(int productId)
         {
@@ -302,34 +357,30 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                         return -1;
                     }
 
-                    // delete images
+                    // get existing images before deleting product
                     var existingImages = await connection.QueryFirstOrDefaultAsync<string>(
                         "SELECT Images FROM Product WHERE ProductId = @ProductId",
                         new { ProductId = productId }
                     );
-
-                    List<string> currentImages = existingImages?.Split(',').ToList() ?? new();
-
-                    var uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/products");
-                    if (!Directory.Exists(uploadFolder))
-                    {
-                        Directory.CreateDirectory(uploadFolder);
-                    }
-
-                    foreach (var imagePath in currentImages)
-                    {
-                        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", imagePath.TrimStart('/'));
-                        if (System.IO.File.Exists(fullPath))
-                        {
-                            System.IO.File.Delete(fullPath);
-                        }
-                    }
 
                     // delete product
                     await connection.ExecuteAsync(
                         "DELETE FROM Product WHERE ProductId = @ProductId",
                         new { ProductId = productId }
                     );
+
+                    // delete images
+                    List<string> currentImages = existingImages?.Split(',').ToList() ?? new();
+
+                    foreach (var imagePath in currentImages)
+                    {
+                        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", imagePath.TrimStart('/'));
+                        if (File.Exists(fullPath))
+                        {
+                            File.Delete(fullPath);
+                        }
+                    }
+
 
                     return productId;
                 }
