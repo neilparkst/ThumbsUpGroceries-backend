@@ -61,8 +61,8 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var subTotalPrice = trolleyItems.Sum(item => item.TotalPrice);
                 // set ServiceFee, BagFee, TotalPrice based on the membership type
                 var membership = await _membershipRepository.GetCurrentUserMembershipName(userId);
-                float serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
-                float bagFee = TrolleyConstants.BAG_FEE;
+                int serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                int bagFee = TrolleyConstants.BAG_FEE;
                 if (string.IsNullOrEmpty(membership))
                 {
                     serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
@@ -371,8 +371,8 @@ namespace ThumbsUpGroceries_backend.Controllers
 
                 // set ServiceFee, BagFee based on the membership type
                 var membership = await _membershipRepository.GetCurrentUserMembershipName(userId);
-                float serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
-                float bagFee = TrolleyConstants.BAG_FEE;
+                int serviceFee = (trolley.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                int bagFee = TrolleyConstants.BAG_FEE;
                 var subTotalPrice = trolleyItems.Sum(item => item.TotalPrice);
                 if (string.IsNullOrEmpty(membership))
                 {
@@ -420,7 +420,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                         {
                             PriceData = new SessionLineItemPriceDataOptions
                             {
-                                UnitAmount = (long)(bagFee * 100),
+                                UnitAmount = (long)bagFee,
                                 Currency = "nzd",
                                 ProductData = new SessionLineItemPriceDataProductDataOptions
                                 {
@@ -439,7 +439,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                                 Type = "fixed_amount",
                                 FixedAmount = new SessionShippingOptionShippingRateDataFixedAmountOptions
                                 {
-                                    Amount = (long)(serviceFee * 100),
+                                    Amount = (long)serviceFee,
                                     Currency = "nzd"
                                 },
                                 DisplayName = trolley.Method.ToString() == "delivery" ? "Delivery Fee" : "Pickup Fee"
@@ -472,7 +472,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                         {
                             PriceData = new SessionLineItemPriceDataOptions
                             {
-                                UnitAmount = (long)(trolleyItem.ProductPrice * 100),
+                                UnitAmount = (long)trolleyItem.ProductPrice,
                                 Currency = "nzd",
                                 ProductData = new SessionLineItemPriceDataProductDataOptions
                                 {
@@ -488,17 +488,17 @@ namespace ThumbsUpGroceries_backend.Controllers
                         };
                         options.LineItems.Add(lineItem);
                     }
-                    else if (trolleyItem.ProductPriceUnitType == PriceUnitType.kg)
+                    else if (trolleyItem.ProductPriceUnitType == PriceUnitType.g)
                     {
                         var lineItem = new SessionLineItemOptions
                         {
                             PriceData = new SessionLineItemPriceDataOptions
                             {
-                                UnitAmount = (long)(trolleyItem.TotalPrice * 100),
+                                UnitAmount = (long)trolleyItem.TotalPrice,
                                 Currency = "nzd",
                                 ProductData = new SessionLineItemPriceDataProductDataOptions
                                 {
-                                    Name = trolleyItem.ProductName + $" {trolleyItem.Quantity}kg",
+                                    Name = trolleyItem.ProductName + $" {(trolleyItem.Quantity / (double)1000).ToString("N2")}kg",
                                     Metadata = new Dictionary<string, string>
                                     {
                                         { "productId", trolleyItem.ProductId.ToString() },

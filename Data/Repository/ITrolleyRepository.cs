@@ -10,9 +10,9 @@ namespace ThumbsUpGroceries_backend.Data.Repository
 
         Task<List<TrolleyItemMany>> GetTrolleyItems(int trolleyId);
 
-        Task<TrolleyItem> AddTrolleyItem(Guid userId, int productId, PriceUnitType priceUnitType, float quantity);
+        Task<TrolleyItem> AddTrolleyItem(Guid userId, int productId, PriceUnitType priceUnitType, int quantity);
 
-        Task<TrolleyItem> UpdateTrolleyItem(Guid userId, int trolleyItemId, float quantity);
+        Task<TrolleyItem> UpdateTrolleyItem(Guid userId, int trolleyItemId, int quantity);
 
         Task<TrolleyItem> RemoveTrolleyItem(Guid userId, int trolleyItemId);
 

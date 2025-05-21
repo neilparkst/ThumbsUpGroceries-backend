@@ -6,7 +6,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
     {
         public int PlanId { get; set; }
         public string Name { get; set; }
-        public double Price { get; set; }
+        public int Price { get; set; }
         public int DurationMonths { get; set; }
         public string Description { get; set; }
         public string StripePriceId { get; set; }
@@ -16,7 +16,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
     {
         public int PlanId { get; set; }
         public string Name { get; set; }
-        public double Price { get; set; }
+        public int Price { get; set; }
         public int DurationMonths { get; set; }
         public string Description { get; set; }
     }
@@ -36,7 +36,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         public int MembershipId { get; set; }
         public int PlanId { get; set; }
         public string PlanName { get; set; }
-        public double PlanPrice { get; set; }
+        public int PlanPrice { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime RenewalDate { get; set; }
         public MembershipStatus Status { get; set; }

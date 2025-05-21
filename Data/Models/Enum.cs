@@ -3,7 +3,7 @@
     public enum PriceUnitType
     {
         ea,
-        kg
+        g
     }
 
     public enum TrolleyMethod

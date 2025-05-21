@@ -107,7 +107,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
             }
         }
 
-        public async Task<TrolleyItem> AddTrolleyItem(Guid userId, int productId, PriceUnitType priceUnitType, float quantity)
+        public async Task<TrolleyItem> AddTrolleyItem(Guid userId, int productId, PriceUnitType priceUnitType, int quantity)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -206,7 +206,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
             }
         }
 
-        public async Task<TrolleyItem> UpdateTrolleyItem(Guid userId, int trolleyItemId, float quantity)
+        public async Task<TrolleyItem> UpdateTrolleyItem(Guid userId, int trolleyItemId, int quantity)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -497,8 +497,8 @@ namespace ThumbsUpGroceries_backend.Data.Repository
 
                     // get membership data to check serviceFee and bagFee
                     var membership = await _membershipRepository.GetCurrentUserMembershipName(userId);
-                    float serviceFee = (request.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
-                    float bagFee = TrolleyConstants.BAG_FEE;
+                    int serviceFee = (request.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
+                    int bagFee = TrolleyConstants.BAG_FEE;
                     if (string.IsNullOrEmpty(membership))
                     {
                         serviceFee = (request.Method == TrolleyMethod.delivery) ? TrolleyConstants.DELIVERY_FEE : 0;
