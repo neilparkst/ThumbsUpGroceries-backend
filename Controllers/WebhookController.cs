@@ -13,12 +13,14 @@ namespace ThumbsUpGroceries_backend.Controllers
     public class WebhookController : ControllerBase
     {
         private readonly string _connectionString;
-        private readonly string webhookSecretKey;
+        private readonly string checkoutWebhookSecretKey;
+        private readonly string ordersWebhookSecretKey;
 
         public WebhookController(IConfiguration configuration)
         {
             _connectionString = configuration["ConnectionStrings:DefaultConnection"];
-            webhookSecretKey = configuration["Stripe:WebhookSecretKey"];
+            checkoutWebhookSecretKey = configuration["Stripe:CheckoutWebhookSecretKey"];
+            ordersWebhookSecretKey = configuration["Stripe:OrdersWebhookSecretKey"];
         }
 
         [HttpPost("checkout")]
@@ -31,7 +33,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var stripeEvent = EventUtility.ConstructEvent(
                     json,
                     Request.Headers["Stripe-Signature"],
-                    webhookSecretKey
+                    checkoutWebhookSecretKey
                 );
 
                 // Handle the event
@@ -413,7 +415,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var stripeEvent = EventUtility.ConstructEvent(
                     json,
                     Request.Headers["Stripe-Signature"],
-                    webhookSecretKey
+                    ordersWebhookSecretKey
                 );
 
                 // Handle the event
