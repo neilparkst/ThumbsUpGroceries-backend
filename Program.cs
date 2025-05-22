@@ -22,6 +22,9 @@ namespace ThumbsUpGroceries_backend
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            // Add Environment variables
+            builder.Configuration.AddEnvironmentVariables();
+
             // Add CORS services
             builder.Services.AddCors(options =>
                 options.AddPolicy("CorsPolicy", policy =>
