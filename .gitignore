@@ -368,3 +368,8 @@ Properties/launchSettings.json
 
 # wwwroot files
 wwwroot/
+
+# Azure auto-generated deployment artifacts
+*.arm.json
+serviceDependencies.json
+serviceDependencies.*.json
