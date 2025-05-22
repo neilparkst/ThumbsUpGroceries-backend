@@ -96,7 +96,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                                     }
                                     else if (product.Metadata["productPriceUnitType"] == "kg")
                                     {
-                                        subTotalAmountInCents += (long)(long.Parse(product.Metadata["productPrice"]) * double.Parse(product.Metadata["quantity"]));
+                                        subTotalAmountInCents += (long)(long.Parse(product.Metadata["productPrice"]) * long.Parse(product.Metadata["quantity"]));
                                     }
                                 }
 
@@ -116,7 +116,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                                             {
                                                 var productPriceUnitType = product.Metadata["productPriceUnitType"];
                                                 var productId = int.Parse(product.Metadata["productId"]);
-                                                var quantity = productPriceUnitType == "ea" ? (double)product.Quantity : double.Parse(product.Metadata["quantity"]);
+                                                var quantity = productPriceUnitType == "ea" ? product.Quantity : int.Parse(product.Metadata["quantity"]);
 
                                                 // Update the product quantity in the database
                                                 await connection.ExecuteAsync(
@@ -145,10 +145,10 @@ namespace ThumbsUpGroceries_backend.Controllers
                                                     ChosenDate = DateTime.Parse(chosenDate),
                                                     ChosenAddress = chosenAddress,
                                                     TransactionId = transactionId,
-                                                    ServiceFee = (double)serviceFeeInCents / 100,
-                                                    BagFee = (double)bagFeeInCents / 100,
-                                                    SubTotalAmount = (double)subTotalAmountInCents / 100,
-                                                    TotalAmount = (double)totalAmountInCents / 100,
+                                                    ServiceFee = serviceFeeInCents,
+                                                    BagFee = bagFeeInCents,
+                                                    SubTotalAmount = subTotalAmountInCents,
+                                                    TotalAmount = totalAmountInCents,
                                                     OrderStatus = "registered"
                                                 },
                                                 transaction
@@ -159,7 +159,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                                             {
                                                 var productPriceUnitType = product.Metadata["productPriceUnitType"];
                                                 var productId = int.Parse(product.Metadata["productId"]);
-                                                var quantity = productPriceUnitType == "ea" ? (double)product.Quantity : double.Parse(product.Metadata["quantity"]);
+                                                var quantity = productPriceUnitType == "ea" ? product.Quantity : int.Parse(product.Metadata["quantity"]);
                                                 var productName = productPriceUnitType == "ea" ? product.Name : product.Metadata["productName"];
 
                                                 await connection.ExecuteAsync(
@@ -169,10 +169,10 @@ namespace ThumbsUpGroceries_backend.Controllers
                                                     {
                                                         OrderId = orderId,
                                                         ProductId = productId,
-                                                        Price = (double)product.UnitAmount / 100,
+                                                        Price = product.UnitAmount,
                                                         PriceUnitType = productPriceUnitType,
                                                         Quantity = quantity,
-                                                        TotalPrice = (double)product.UnitAmount * quantity / 100,
+                                                        TotalPrice = product.UnitAmount * quantity,
                                                         ProductName = productName
                                                     },
                                                     transaction
