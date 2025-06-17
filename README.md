@@ -1,3 +1,9 @@
+# 🛒 ThumbsUp Groceries – Backend
+
+This is the backend API for **ThumbsUp Groceries**, supporting core features like user authentication, product management, order processing, and Stripe-based payment handling. Built using ASP.NET Core and deployed on Microsoft Azure.
+
+---
+
 ## ✅ Requirements
 
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) — Project targets `net8.0`, tested with SDK version `8.0.204`
@@ -78,3 +84,11 @@ These should be defined either in your environment or in your local settings fil
 /Data/Models         # Defines data structures and entity models
 /Data/Repository     # Contains data access logic (queries, commands, etc.)
 ```
+
+## ✨ Features
+
+- Customer and admin role support
+- Secure login, signup, JWT authentication
+- Product management (admin only)
+- Trolley and order processing
+- Stripe integration for payments and membership
