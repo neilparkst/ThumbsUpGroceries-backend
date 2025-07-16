@@ -118,7 +118,16 @@ namespace ThumbsUpGroceries_backend.Data.Models
 
     public class TrolleyTimeSlot
     {
-        public int TimeSlotId { get; set; }
+        public int SlotId { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public TrolleyMethod Method { get; set; }
+        public int SlotCount { get; set; }
+    }
+
+        public class TrolleyTimeSlotDto
+    {
+        public int SlotId { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
         public TrolleyTimeSlotStatus Status { get; set; } = TrolleyTimeSlotStatus.available;
@@ -129,7 +138,7 @@ namespace ThumbsUpGroceries_backend.Data.Models
         [Required]
         public int TrolleyId { get; set; }
         [Required]
-        public DateTime ChosenDate { get; set; }
+        public int ChosenTimeSlot { get; set; }
         [Required]
         public string ChosenAddress { get; set; }
         [Required]

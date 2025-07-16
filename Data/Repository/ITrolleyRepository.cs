@@ -20,6 +20,10 @@ namespace ThumbsUpGroceries_backend.Data.Repository
 
         Task<Trolley> UpdateTrolleyMethod(Guid userId, int trolleyId, TrolleyMethod method);
 
+        Task<List<TrolleyTimeSlot>> GetTrolleyTimeSlots(DateTime date, TrolleyMethod trolleyMethod);
+
+        Task<bool> CreateTrolleyTimeSlots(DateTime startDate, DateTime endDate);
+
         Task<bool> ValidateTrolley(Guid userId, TrolleyValidationRequest request);
     }
 }

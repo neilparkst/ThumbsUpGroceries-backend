@@ -62,7 +62,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                                 var userId = session.Metadata["userId"];
                                 var trolleyId = session.Metadata["trolleyId"];
                                 var serviceMethod = session.Metadata["serviceMethod"];
-                                var chosenDate = session.Metadata["chosenDate"];
+                                var chosenTimeSlot = session.Metadata["chosenTimeSlot"];
                                 var chosenAddress = session.Metadata["chosenAddress"];
 
                                 // about products
@@ -135,14 +135,14 @@ namespace ThumbsUpGroceries_backend.Controllers
 
                                             // create order
                                             var orderId = await connection.ExecuteScalarAsync<int>(
-                                                "INSERT INTO ProductOrder (UserId, ServiceMethod, ChosenDate, ChosenAddress, TransactionId, ServiceFee, BagFee, SubTotalAmount, TotalAmount, OrderStatus) " +
+                                                "INSERT INTO ProductOrder (UserId, ServiceMethod, ChosenTimeSlot, ChosenAddress, TransactionId, ServiceFee, BagFee, SubTotalAmount, TotalAmount, OrderStatus) " +
                                                 "OUTPUT INSERTED.OrderId " +
-                                                "VALUES (@UserId, @ServiceMethod, @ChosenDate, @ChosenAddress, @TransactionId, @ServiceFee, @BagFee, @SubTotalAmount, @TotalAmount, @OrderStatus)",
+                                                "VALUES (@UserId, @ServiceMethod, @ChosenTimeSlot, @ChosenAddress, @TransactionId, @ServiceFee, @BagFee, @SubTotalAmount, @TotalAmount, @OrderStatus)",
                                                 new
                                                 {
                                                     UserId = Guid.Parse(userId),
                                                     ServiceMethod = serviceMethod,
-                                                    ChosenDate = DateTime.Parse(chosenDate),
+                                                    ChosenTimeSlot = chosenTimeSlot,
                                                     ChosenAddress = chosenAddress,
                                                     TransactionId = transactionId,
                                                     ServiceFee = serviceFeeInCents,

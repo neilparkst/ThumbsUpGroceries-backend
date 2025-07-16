@@ -438,6 +438,97 @@ namespace ThumbsUpGroceries_backend.Data.Repository
             }
         }
 
+        public async Task<List<TrolleyTimeSlot>> GetTrolleyTimeSlots(DateTime date, TrolleyMethod trolleyMethod)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    var trolleyTimeSlots = await connection.QueryAsync<TrolleyTimeSlot>(
+                        "SELECT * FROM TrolleyTimeSlot WHERE ServiceMethod = @ServiceMethod AND StartDate > @Date",
+                        new { ServiceMethod = trolleyMethod.ToString(), Date = date }
+                    );
+
+                    return trolleyTimeSlots.ToList();
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while fetching trolley time slots");
+                }
+            }
+        }
+
+        public async Task<bool> CreateTrolleyTimeSlots(DateTime startDate, DateTime endDate)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    using(var transaction = await connection.BeginTransactionAsync())
+                    {
+                        // Insert new time slots for pickup
+                        for (DateTime currentDate = startDate.Date; currentDate <= endDate.Date; currentDate = currentDate.AddDays(1))
+                        {
+                            for (int hour = 7; hour <= 20; hour++)
+                            {
+                                for (int minute = 0; minute < 60; minute += 30)
+                                {
+                                    DateTime currentStartTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, hour, minute, 0);
+                                    
+                                    await connection.ExecuteAsync(@"
+                                        INSERT INTO TrolleyTimeSlot (StartDate, EndDate, ServiceMethod, SlotCount)
+                                        VALUES (@StartDate, @EndDate, @ServiceMethod, @SlotCount)",
+                                        new
+                                        {
+                                            StartDate = currentStartTime,
+                                            EndDate = currentStartTime.AddMinutes(30),
+                                            ServiceMethod = TrolleyMethod.pickup.ToString(),
+                                            SlotCount = 1
+                                        },
+                                        transaction: transaction
+                                    );
+                                }
+                            }
+                        }
+
+                        // Insert new time slots for delivery
+                        for (DateTime currentDate = startDate.Date; currentDate <= endDate.Date; currentDate = currentDate.AddDays(1))
+                        {
+                            for (int hour = 8; hour <= 17; hour++)
+                            {
+                                DateTime currentStartTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, hour, 30, 0);
+
+                                await connection.ExecuteAsync(@"
+                                    INSERT INTO TrolleyTimeSlot (StartDate, EndDate, ServiceMethod, SlotCount)
+                                    VALUES (@StartDate, @EndDate, @ServiceMethod, @SlotCount)",
+                                    new
+                                    {
+                                        StartDate = currentStartTime,
+                                        EndDate = currentStartTime.AddMinutes(150),
+                                        ServiceMethod = TrolleyMethod.delivery.ToString(),
+                                        SlotCount = 1
+                                    },
+                                    transaction: transaction
+                                );
+                            }
+                        }
+
+                        await transaction.CommitAsync();
+                    }
+
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("An error occurred while creating trolley time slots");
+                }
+            }
+        }
+
         public async Task<bool> ValidateTrolley(Guid userId, TrolleyValidationRequest request)
         {
             using (var connection = new SqlConnection(_connectionString))

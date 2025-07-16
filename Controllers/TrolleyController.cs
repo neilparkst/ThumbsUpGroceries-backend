@@ -260,69 +260,46 @@ namespace ThumbsUpGroceries_backend.Controllers
             }
         }
 
-        //[Authorize]
         [HttpGet("time-slot/{serviceMethod}")]
         public async Task<IActionResult> GetTimeSlot(TrolleyMethod serviceMethod)
         {
             try
             {
-                //var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
-                //var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+                // get timeslots after current time for the next 7 days
+                DateTime now = DateTime.Now;
+                DateTime today = now.Date;
 
-                // TODO: create database table for time slots
-                List<TrolleyTimeSlot> timeSlots = new List<TrolleyTimeSlot>();
-                if (serviceMethod == TrolleyMethod.pickup) {
-                    DateTime now = DateTime.Now;
-                    DateTime today = now.Date;
-
-                    for (int i = 0; i < 7; i++)
-                    {
-                        DateTime currentDate = today.AddDays(i);
-                        for (int hour = 7; hour <= 20; hour++)
-                        {
-                            for(int minute = 0; minute < 60; minute += 30)
-                            {
-                                DateTime currentStartTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, hour, minute, 0);
-                                if (currentStartTime > now)
-                                {
-                                    timeSlots.Add(new TrolleyTimeSlot
-                                    {
-                                        TimeSlotId = 10000 + i * 14 + hour + minute,
-                                        Start = currentStartTime,
-                                        End = currentStartTime.AddMinutes(30),
-                                        Status = TrolleyTimeSlotStatus.available
-                                    });
-                                }
-                            }
-                        }
-                    }
-                }
-                else if (serviceMethod == TrolleyMethod.delivery)
+                List<TrolleyTimeSlot> timeSlots = await _trolleyRepository.GetTrolleyTimeSlots(now, serviceMethod);
+                // if timeslots are not fully created for the next 7 days, create them on the fly
+                DateTime nextSevenDays = today.AddDays(7);
+                if (timeSlots.Count == 0)
                 {
-                    DateTime now = DateTime.Now;
-                    DateTime today = now.Date;
-
-                    for (int i = 0; i < 7; i++)
+                    bool isCreated = await _trolleyRepository.CreateTrolleyTimeSlots(today, nextSevenDays);
+                    if (!isCreated)
                     {
-                        DateTime currentDate = today.AddDays(i);
-                        for (int hour = 8; hour <= 17; hour++)
-                        {
-                            DateTime currentStartTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, hour, 30, 0);
-                            if (currentStartTime > now)
-                            {
-                                timeSlots.Add(new TrolleyTimeSlot
-                                {
-                                    TimeSlotId = 20000 + i * 14 + hour,
-                                    Start = currentStartTime,
-                                    End = currentStartTime.AddMinutes(150),
-                                    Status = TrolleyTimeSlotStatus.available
-                                });
-                            }
-                        }
+                        return StatusCode(500, new { message = "Failed to create time slots." });
                     }
+                    timeSlots = await _trolleyRepository.GetTrolleyTimeSlots(now, serviceMethod);
+                }
+                else if(timeSlots.Max(slot => slot.EndDate.Date) < nextSevenDays)
+                {
+                    bool isCreated = await _trolleyRepository.CreateTrolleyTimeSlots(timeSlots.Max(slot => slot.EndDate.Date.AddDays(1)), nextSevenDays);
+                    if (!isCreated)
+                    {
+                        return StatusCode(500, new { message = "Failed to create time slots." });
+                    }
+                    timeSlots = await _trolleyRepository.GetTrolleyTimeSlots(now, serviceMethod);
                 }
 
-                return Ok(timeSlots);
+                List<TrolleyTimeSlotDto> timeSlotsDto = timeSlots.Select(slot => new TrolleyTimeSlotDto
+                {
+                    SlotId = slot.SlotId,
+                    Start = slot.StartDate,
+                    End = slot.EndDate,
+                    Status = slot.SlotCount > 0 ? TrolleyTimeSlotStatus.available : TrolleyTimeSlotStatus.unavailable
+                }).ToList();
+
+                return Ok(timeSlotsDto);
             }
             catch (Exception e)
             {
@@ -454,7 +431,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                         { "userId", userId.ToString() },
                         { "trolleyId", request.TrolleyId.ToString() },
                         { "serviceMethod", trolley.Method.ToString() },
-                        { "chosenDate", request.ChosenDate.ToString("yyyy-MM-ddTHH:mm:ss") },
+                        { "chosenTimeSlot", request.ChosenTimeSlot.ToString() },
                         { "chosenAddress", request.ChosenAddress }
                     },
                 };
