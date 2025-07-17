@@ -24,6 +24,8 @@ namespace ThumbsUpGroceries_backend.Data.Repository
 
         Task<bool> CreateTrolleyTimeSlots(DateTime startDate, DateTime endDate);
 
+        Task<bool> OccupyTimeSlot(Guid userId, int timeSlotId);
+
         Task<bool> ValidateTrolley(Guid userId, TrolleyValidationRequest request);
     }
 }

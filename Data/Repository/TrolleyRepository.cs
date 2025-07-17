@@ -529,6 +529,47 @@ namespace ThumbsUpGroceries_backend.Data.Repository
             }
         }
 
+        public async Task<bool> OccupyTimeSlot(Guid userId, int timeSlotId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                try
+                {
+                    await connection.OpenAsync();
+
+                    // check if the user is authorised
+                    var isUserAuthorized = await connection.ExecuteScalarAsync<bool>(
+                        "SELECT 1 WHERE EXISTS(SELECT 1 FROM Trolley WHERE UserId = @UserId)",
+                        new { UserId = userId }
+                    );
+                    if (!isUserAuthorized)
+                    {
+                        throw new InvalidDataException("User is not authorized to occupy this time slot");
+                    }
+
+                    // Occupy Time Slot
+                    var isTimeSlotAffected = await connection.ExecuteAsync(
+                        "UPDATE TrolleyTimeSlot SET SlotCount = SlotCount - 1 WHERE SlotId = @SlotId AND SlotCount > 0",
+                        new { SlotId = timeSlotId }
+                    );
+                    if (isTimeSlotAffected == 0)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    if (e.GetType() == typeof(InvalidDataException))
+                    {
+                        throw e;
+                    }
+                    throw new Exception("An error occurred while occupying time slot");
+                }
+            }
+        }
+
         public async Task<bool> ValidateTrolley(Guid userId, TrolleyValidationRequest request)
         {
             using (var connection = new SqlConnection(_connectionString))

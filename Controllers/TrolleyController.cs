@@ -308,6 +308,32 @@ namespace ThumbsUpGroceries_backend.Controllers
         }
 
         [Authorize]
+        [HttpPost("time-slot/{timeSlotId}/occupy")]
+        public async Task<IActionResult> OccupyTimeSlot(int timeSlotId)
+        {
+            try
+            {
+                var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
+                var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
+
+                var isOccupied = await _trolleyRepository.OccupyTimeSlot(userId, timeSlotId);
+                if (!isOccupied)
+                {
+                    return BadRequest(new { message = "The time slot is not available" });
+                }
+                return Ok(new { success = true });
+            }
+            catch (InvalidDataException e)
+            {
+                return BadRequest(new { message = e.Message });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500);
+            }
+        }
+
+        [Authorize]
         [HttpPost("validation")]
         public async Task<IActionResult> ValidateTrolley([FromBody] TrolleyValidationRequest request)
         {
