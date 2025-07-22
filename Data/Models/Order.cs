@@ -11,6 +11,7 @@
         public int TotalAmount { get; set; }
         public string ChosenAddress { get; set; }
         public DateTime ChosenDate { get; set; }
+        public int ChosenTimeSlot { get; set; }
         public OrderStatus OrderStatus { get; set; }
         public string TransactionId { get; set; }
         public DateTime OrderDate { get; set; }
@@ -22,7 +23,8 @@
         public TrolleyMethod ServiceMethod { get; set; }
         public int TotalAmount { get; set; }
         public string ChosenAddress { get; set; }
-        public DateTime ChosenDate { get; set; }
+        public DateTime ChosenStartDate { get; set; }
+        public DateTime ChosenEndDate { get; set; }
         public OrderStatus OrderStatus { get; set; }
         public DateTime OrderDate { get; set; }
     }
@@ -49,7 +51,8 @@
         public int ServiceFee { get; set; }
         public int TotalAmount { get; set; }
         public string ChosenAddress { get; set; }
-        public DateTime ChosenDate { get; set; }
+        public DateTime ChosenStartDate { get; set; }
+        public DateTime ChosenEndDate { get; set; }
         public OrderStatus OrderStatus { get; set; }
         public DateTime OrderDate { get; set; }
     }

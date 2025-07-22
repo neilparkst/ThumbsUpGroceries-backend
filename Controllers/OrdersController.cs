@@ -28,17 +28,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
                 var orders = await _orderRepository.GetOrders(userId);
-                var orderManyResponse = orders.Select(o => new OrderMany
-                {
-                    OrderId = o.OrderId,
-                    ServiceMethod = o.ServiceMethod,
-                    TotalAmount = o.TotalAmount,
-                    ChosenAddress = o.ChosenAddress,
-                    ChosenDate = o.ChosenDate,
-                    OrderStatus = o.OrderStatus,
-                    OrderDate = o.OrderDate,
-                }).ToList();
-                return Ok(orderManyResponse);
+                return Ok(orders);
             }
             catch (Exception e)
             {

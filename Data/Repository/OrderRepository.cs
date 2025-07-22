@@ -14,7 +14,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
             _connectionString = configuration["ConnectionStrings:DefaultConnection"];
         }
 
-        public async Task<List<Order>> GetOrders(Guid userId)
+        public async Task<List<OrderMany>> GetOrders(Guid userId)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -25,7 +25,29 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                         new { UserId = userId }
                     );
 
-                    return orders.ToList();
+                    var orderManyList = new List<OrderMany>();
+                    foreach (var order in orders)
+                    {
+                        // get time slot info
+                        var timeSlot = await connection.QueryFirstOrDefaultAsync<TrolleyTimeSlot>(
+                            "SELECT * FROM TrolleyTimeSlot WHERE TimeSlotId = @TimeSlotId",
+                            new { TimeSlotId = order.ChosenTimeSlot }
+                        );
+
+                        orderManyList.Add( new OrderMany()
+                        {
+                            OrderId = order.OrderId,
+                            ServiceMethod = order.ServiceMethod,
+                            TotalAmount = order.TotalAmount,
+                            ChosenAddress = order.ChosenAddress,
+                            ChosenStartDate = timeSlot?.StartDate ?? order.ChosenDate,
+                            ChosenEndDate = timeSlot?.EndDate ?? order.ChosenDate,
+                            OrderStatus = order.OrderStatus,
+                            OrderDate = order.OrderDate
+                        });
+                    }
+
+                    return orderManyList;
                 }
                 catch (Exception e)
                 {
@@ -50,6 +72,12 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                     {
                         throw new InvalidDataException("Order not found");
                     }
+
+                    // get time slot info
+                    var timeSlot = await connection.QueryFirstOrDefaultAsync<TrolleyTimeSlot>(
+                        "SELECT * FROM TrolleyTimeSlot WHERE TimeSlotId = @TimeSlotId",
+                        new { TimeSlotId = order.ChosenTimeSlot }
+                    );
 
                     // get order items info
                     var orderItems = await connection.QueryAsync<OrderItem>(
@@ -80,7 +108,8 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                         ServiceFee = order.ServiceFee,
                         TotalAmount = order.TotalAmount,
                         ChosenAddress = order.ChosenAddress,
-                        ChosenDate = order.ChosenDate,
+                        ChosenStartDate = timeSlot?.StartDate ?? order.ChosenDate,
+                        ChosenEndDate = timeSlot?.EndDate ?? order.ChosenDate,
                         OrderStatus = order.OrderStatus,
                         OrderDate = order.OrderDate,
                         OrderItems = orderItems.ToList()
