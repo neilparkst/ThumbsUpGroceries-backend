@@ -316,12 +316,12 @@ namespace ThumbsUpGroceries_backend.Controllers
                 var jwtToken = Request.Headers["Authorization"].ToString().Split(" ")[1];
                 var userId = Guid.Parse(JwtService.GetClaimFromToken(jwtToken, "userId"));
 
-                var isOccupied = await _trolleyRepository.OccupyTimeSlot(userId, timeSlotId);
-                if (!isOccupied)
+                var timeSlotRecordId = await _trolleyRepository.OccupyTimeSlot(userId, timeSlotId);
+                if (timeSlotRecordId == 0)
                 {
                     return BadRequest(new { message = "The time slot is not available" });
                 }
-                return Ok(new { success = true });
+                return Ok(new { timeSlotRecordId });
             }
             catch (InvalidDataException e)
             {
@@ -458,6 +458,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                         { "trolleyId", request.TrolleyId.ToString() },
                         { "serviceMethod", trolley.Method.ToString() },
                         { "chosenTimeSlot", request.ChosenTimeSlot.ToString() },
+                        { "timeSlotRecordId", request.TimeSlotRecordId.ToString() },
                         { "chosenAddress", request.ChosenAddress }
                     },
                 };

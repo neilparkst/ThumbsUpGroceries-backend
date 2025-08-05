@@ -63,6 +63,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                                 var trolleyId = session.Metadata["trolleyId"];
                                 var serviceMethod = session.Metadata["serviceMethod"];
                                 var chosenTimeSlot = session.Metadata["chosenTimeSlot"];
+                                var timeSlotRecordId = session.Metadata["timeSlotRecordId"];
                                 var chosenAddress = session.Metadata["chosenAddress"];
 
                                 // about products
@@ -111,6 +112,13 @@ namespace ThumbsUpGroceries_backend.Controllers
                                     {
                                         try
                                         {
+                                            // delete the time slot record
+                                            await connection.ExecuteAsync(
+                                                "DELETE FROM TrolleyTimeSlotRecord WHERE TimeSlotRecordId = @TimeSlotRecordId",
+                                                new { TimeSlotRecordId = int.Parse(timeSlotRecordId) },
+                                                transaction
+                                            );
+
                                             // reduce the product quantity
                                             foreach (var product in products)
                                             {

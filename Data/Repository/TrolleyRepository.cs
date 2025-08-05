@@ -529,7 +529,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
             }
         }
 
-        public async Task<bool> OccupyTimeSlot(Guid userId, int timeSlotId)
+        public async Task<int> OccupyTimeSlot(Guid userId, int timeSlotId)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -548,16 +548,31 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                     }
 
                     // Occupy Time Slot
-                    var isTimeSlotAffected = await connection.ExecuteAsync(
-                        "UPDATE TrolleyTimeSlot SET SlotCount = SlotCount - 1 WHERE SlotId = @SlotId AND SlotCount > 0",
-                        new { SlotId = timeSlotId }
-                    );
-                    if (isTimeSlotAffected == 0)
+                    using (var transaction = await connection.BeginTransactionAsync())
                     {
-                        return false;
-                    }
+                        var isTimeSlotAffected = await connection.ExecuteAsync(
+                            "UPDATE TrolleyTimeSlot SET SlotCount = SlotCount - 1 WHERE SlotId = @SlotId AND SlotCount > 0",
+                            new { SlotId = timeSlotId },
+                            transaction: transaction
+                        );
+                        if (isTimeSlotAffected == 0)
+                        {
+                            return 0;
+                        }
 
-                    return true;
+                        // Record the occupied time slot
+                        var recordId = await connection.QuerySingleAsync<int>(
+                            "INSERT INTO TrolleyTimeSlotRecord (TimeSlotId, UserId) " +
+                            "OUTPUT INSERTED.RecordId " +
+                            "VALUES (@TimeSlotId, @UserId)",
+                            new { UserId = userId, TimeSlotId = timeSlotId },
+                            transaction: transaction
+                        );
+
+                        await transaction.CommitAsync();
+                        
+                        return recordId;
+                    }
                 }
                 catch (Exception e)
                 {

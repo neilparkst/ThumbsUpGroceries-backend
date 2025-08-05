@@ -140,6 +140,8 @@ namespace ThumbsUpGroceries_backend.Data.Models
         [Required]
         public int ChosenTimeSlot { get; set; }
         [Required]
+        public int TimeSlotRecordId { get; set; }
+        [Required]
         public string ChosenAddress { get; set; }
         [Required]
         public string SuccessUrl { get; set; }
