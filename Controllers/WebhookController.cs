@@ -114,7 +114,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                                         {
                                             // delete the time slot record
                                             await connection.ExecuteAsync(
-                                                "DELETE FROM TrolleyTimeSlotRecord WHERE TimeSlotRecordId = @TimeSlotRecordId",
+                                                "DELETE FROM TrolleyTimeSlotRecord WHERE RecordId = @TimeSlotRecordId",
                                                 new { TimeSlotRecordId = int.Parse(timeSlotRecordId) },
                                                 transaction
                                             );
