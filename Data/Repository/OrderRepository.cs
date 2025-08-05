@@ -30,7 +30,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
                     {
                         // get time slot info
                         var timeSlot = await connection.QueryFirstOrDefaultAsync<TrolleyTimeSlot>(
-                            "SELECT * FROM TrolleyTimeSlot WHERE TimeSlotId = @TimeSlotId",
+                            "SELECT * FROM TrolleyTimeSlot WHERE SlotId = @TimeSlotId",
                             new { TimeSlotId = order.ChosenTimeSlot }
                         );
 
@@ -75,7 +75,7 @@ namespace ThumbsUpGroceries_backend.Data.Repository
 
                     // get time slot info
                     var timeSlot = await connection.QueryFirstOrDefaultAsync<TrolleyTimeSlot>(
-                        "SELECT * FROM TrolleyTimeSlot WHERE TimeSlotId = @TimeSlotId",
+                        "SELECT * FROM TrolleyTimeSlot WHERE SlotId = @TimeSlotId",
                         new { TimeSlotId = order.ChosenTimeSlot }
                     );
 
