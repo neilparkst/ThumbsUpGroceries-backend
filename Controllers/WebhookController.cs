@@ -150,7 +150,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                                                 {
                                                     UserId = Guid.Parse(userId),
                                                     ServiceMethod = serviceMethod,
-                                                    ChosenTimeSlot = chosenTimeSlot,
+                                                    ChosenTimeSlot = int.Parse(chosenTimeSlot),
                                                     ChosenAddress = chosenAddress,
                                                     TransactionId = transactionId,
                                                     ServiceFee = serviceFeeInCents,
