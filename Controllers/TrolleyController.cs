@@ -266,7 +266,8 @@ namespace ThumbsUpGroceries_backend.Controllers
             try
             {
                 // get timeslots after current time for the next 7 days
-                DateTime now = DateTime.Now;
+                var nzTimeZone = TimeZoneInfo.FindSystemTimeZoneById("New Zealand Standard Time");
+                DateTime now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, nzTimeZone);
                 DateTime today = now.Date;
 
                 List<TrolleyTimeSlot> timeSlots = await _trolleyRepository.GetTrolleyTimeSlots(now, serviceMethod);
