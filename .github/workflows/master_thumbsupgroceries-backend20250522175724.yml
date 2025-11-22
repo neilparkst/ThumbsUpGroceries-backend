@@ -62,4 +62,4 @@ jobs:
           app-name: 'ThumbsUpGroceries-backend20250522175724'
           slot-name: 'Production'
           package: .
-          
+          remove-additional-files: false
