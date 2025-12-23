@@ -13,7 +13,7 @@ namespace ThumbsUpGroceries_backend.Service
     {
         private readonly ILogger<CleanupTrolleySlotsService> _logger;
         private readonly string _connectionString;
-        private readonly TimeSpan _interval = TimeSpan.FromMinutes(10);
+        private readonly TimeSpan _interval = TimeSpan.FromHours(24);
 
         public CleanupTrolleySlotsService(IConfiguration configuration, ILogger<CleanupTrolleySlotsService> logger)
         {
