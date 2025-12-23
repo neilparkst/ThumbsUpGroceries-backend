@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.IdentityModel.Tokens;
@@ -6,6 +5,7 @@ using Stripe;
 using System.Text;
 using System.Text.Json.Serialization;
 using ThumbsUpGroceries_backend.Data.Repository;
+using ThumbsUpGroceries_backend.Service;
 
 namespace ThumbsUpGroceries_backend
 {
@@ -69,6 +69,7 @@ namespace ThumbsUpGroceries_backend
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IMembershipRepository, MembershipRepository>();
             builder.Services.AddMemoryCache();
+            builder.Services.AddHostedService<CleanupTrolleySlotsService>();
 
             var app = builder.Build();
 
