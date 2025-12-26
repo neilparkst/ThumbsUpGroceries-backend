@@ -462,6 +462,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                         { "timeSlotRecordId", request.TimeSlotRecordId.ToString() },
                         { "chosenAddress", request.ChosenAddress }
                     },
+                    ExpiresAt = DateTime.UtcNow + new TimeSpan(0, Common.sessionTimeoutMinutes, 0)
                 };
                 if (!string.IsNullOrEmpty(customerId))
                 {
