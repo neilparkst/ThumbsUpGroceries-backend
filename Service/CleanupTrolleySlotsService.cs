@@ -6,6 +6,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ThumbsUpGroceries_backend.Data.Models;
 
 namespace ThumbsUpGroceries_backend.Service
 {
@@ -51,7 +52,7 @@ namespace ThumbsUpGroceries_backend.Service
                 INNER JOIN (
                     SELECT TimeSlotId, COUNT(*) AS RecordCount
                     FROM TrolleyTimeSlotRecord
-                    WHERE CreatedAt < DATEADD(MINUTE, -10, GETUTCDATE())
+                    WHERE CreatedAt < DATEADD(MINUTE, -@Minutes, GETUTCDATE())
                     GROUP BY TimeSlotId
                 ) s
                 ON s.TimeSlotId = T.SlotId;
@@ -60,8 +61,10 @@ namespace ThumbsUpGroceries_backend.Service
             // delete expired records
             var sqlDelete = @"
                 DELETE FROM TrolleyTimeSlotRecord
-                WHERE CreatedAt < DATEADD(MINUTE, -10, GETUTCDATE());
+                WHERE CreatedAt < DATEADD(MINUTE, -@Minutes, GETUTCDATE());
             ";
+
+            var parameters = new { Minutes = Common.sessionTimeoutMinutes };
 
             try
             {
@@ -72,8 +75,8 @@ namespace ThumbsUpGroceries_backend.Service
 
                 try
                 {
-                    var updateCount = await connection.ExecuteAsync(sqlUpdate, transaction: transaction);
-                    var deleteCount = await connection.ExecuteAsync(sqlDelete, transaction: transaction);
+                    var updateCount = await connection.ExecuteAsync(sqlUpdate, parameters, transaction: transaction);
+                    var deleteCount = await connection.ExecuteAsync(sqlDelete, parameters, transaction: transaction);
 
                     var rowsAffected = updateCount + deleteCount;
 

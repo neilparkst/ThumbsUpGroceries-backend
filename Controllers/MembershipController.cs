@@ -65,6 +65,7 @@ namespace ThumbsUpGroceries_backend.Controllers
                         { "userId", userId.ToString() },
                         { "planId", request.planId.ToString() }
                     },
+                    ExpiresAt = DateTime.UtcNow + new TimeSpan(0, Common.sessionTimeoutMinutes, 0)
                 };
                 if (!string.IsNullOrEmpty(customerId))
                 {
